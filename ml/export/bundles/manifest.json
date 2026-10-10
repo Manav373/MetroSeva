@@ -1,0 +1,9 @@
+{
+  "bundle_id": "cte_bundle_1.0.0_1791652784",
+  "version": "1.0.0",
+  "sha256": "5707c930cbe868ffd5fd04106b1f0ca2c107dd3447dd3cadb6d1ffad9f2879a4",
+  "signature": "4ce2332bc11391bb1067ca5b88b31c478e6c84f65045d66c49d2dcae7851510d9a93b18239596bb4357a4d1105cdf7c08664edca2be7bbd4842a15912dc5d408",
+  "public_key": "f6eeb86cbdcccb6ad6773f5de90bd86fcd1865d30b64464d8ff4ba73e69ee63e",
+  "created_at": "2026-10-10T17:19:44Z",
+  "bundle_file": "bundle_1.0.0.json"
+}

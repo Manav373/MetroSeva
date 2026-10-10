@@ -43,7 +43,7 @@
       "severity_score": 92,
       "patterns": [
         "\\b(stuck|trapped|locked|fast|phasa|phase|atkayo|atkaya)\\b.*?\\b(lift|elevator|door|doors|escalator)\\b",
-        "\\b(lift|elevator|door|doors|escalator)\\b.*?\\b(stuck|trapped|fas|phas|atkai|atak|bandh|khultu\\s*nathi)\\b",
+        "\\b(lift|elevator|door|doors|escalator)\\b.*?(stuck|trapped|fas\\w*|phas\\w*|atkai|atak\\w*|khultu\\s*nathi)",
         "(लिफ्ट|दरवाजे|एस्केलेटर).*?(फंस|अटक|बंद)",
         "(લિફ્ટ|દરવાજા|એસ્કેલેટર).*?(ફસા|અટક|અંદર.*?માણસ)"
       ]
