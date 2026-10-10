@@ -9,7 +9,7 @@ import {
   triageOnDevice
 } from './offlineStorage';
 
-const API_BASE = 'http://localhost:8000/v1';
+const API_BASE = ((import.meta as any).env?.VITE_API_BASE as string) || 'http://localhost:8000/v1';
 
 export class ApiService {
   private static isForcedOffline = false;
