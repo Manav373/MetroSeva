@@ -49,23 +49,33 @@ py -m uvicorn main:app --reload --port 8000
 
 ---
 
-### 3. Run the Station Controller Tablet Simulator (Offline Airplane Mode)
-Simulates an Android tablet on a station platform operating without network connectivity:
+### 3. Launch 100% Offline Station Controller Terminal (Zero-Network / Air-Gapped)
+Runs a self-contained local controller terminal with zero external CDNs, zero remote dependencies, and on-device SQLite storage:
+```bash
+cd d:\dev\cte
+py station_app.py
+```
+- Open in any browser: [`http://localhost:8080`](http://localhost:8080)
+- **100% Offline Operations**: Ingest paper forms/text, view department tabs, examine P1 safety incidents pinned at the top, review draft responses, and approve tickets.
+- **Local Outbox**: Actions persist in `station_offline.db` even across reboots or after 72 hours of disconnected station operation.
+- **Toggle Connectivity**: Switch to Online when station WiFi/cellular is available to sync pending outbox items to the central server.
+
+---
+
+### 4. Run Station Tablet Simulator (Command-line)
 ```bash
 cd d:\dev\cte
 py android-station/station_simulator.py
 ```
-- Ingests paper forms & local complaints offline.
-- Pins P1 safety items to the top.
-- Drafts responses in Gujarati, Hindi, or English.
-- Drains local outbox to cloud when reconnected.
 
 ---
 
-### 4. Run End-to-End Sync Tests
+### 5. Run End-to-End Tests
 ```bash
 cd d:\dev\cte
-py test_e2e_sync.py
+py test_all_functions.py      # Exhaustive 43-function test suite
+py test_offline_app.py        # 100% offline station terminal verification
+py test_e2e_sync.py           # Offline tablet -> Cloud sync verification
 ```
 
 ---
