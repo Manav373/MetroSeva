@@ -153,9 +153,9 @@ class DepartmentClassifier:
         top1_dept, top1_prob = sorted_depts[0]
         top2_dept, top2_prob = sorted_depts[1]
 
-        # Secondary department if score is notable (> 0.20 and not 'other')
+        # Secondary department if score is notable (> 0.10 or has substantial keyword match)
         secondary = None
-        if top2_prob >= 0.20 and top2_dept != "other" and top2_dept != top1_dept:
+        if (top2_prob >= 0.10 or scores[top2_dept] >= 3.0) and top2_dept != "other" and top2_dept != top1_dept:
             secondary = top2_dept
 
         is_review = top1_prob < self.confidence_threshold

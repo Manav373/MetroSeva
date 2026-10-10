@@ -3,6 +3,7 @@ Database persistence layer for Ingest Service.
 Implements SQLite storage matching Section 5.3 data models with thread-safety.
 """
 
+import datetime
 import json
 import os
 import sqlite3
@@ -91,6 +92,7 @@ class Database:
         with self.lock:
             conn = self._get_connection()
             cur = conn.cursor()
+            now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
             cur.execute("""
             INSERT OR REPLACE INTO complaints (
                 id, channel, station_id, received_at, raw_text, raw_image_ref,
@@ -103,8 +105,8 @@ class Database:
                 c.get("id"),
                 c.get("channel", "app"),
                 c.get("station_id", "STN_DEFAULT"),
-                c.get("received_at"),
-                c.get("raw_text"),
+                c.get("received_at") or now_iso,
+                c.get("raw_text", ""),
                 c.get("raw_image_ref"),
                 c.get("lang_detected"),
                 c.get("normalised"),
@@ -121,7 +123,7 @@ class Database:
                 c.get("duplicate_of"),
                 c.get("model_version"),
                 c.get("rule_version"),
-                c.get("updated_at"),
+                c.get("updated_at") or now_iso,
                 c.get("sync_state", "synced")
             ))
             conn.commit()
