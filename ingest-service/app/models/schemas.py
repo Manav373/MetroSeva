@@ -50,7 +50,7 @@ class ComplaintResponse(BaseModel):
 
 # Sync Protocol schemas (TRD Section 5.5)
 class OutboxPushItem(BaseModel):
-    client_uuid: str
+    client_uuid: Optional[str] = None
     idempotency_key: str
     op_type: str  # CREATE_COMPLAINT, REVIEW_COMPLAINT, APPROVE_REPLY
     payload: Dict[str, Any]
