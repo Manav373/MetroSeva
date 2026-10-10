@@ -1,0 +1,103 @@
+{
+  "version": "1.0.0",
+  "name": "metro_safety_rules",
+  "min_urgency_floor": 80,
+  "forced_priority": "P1",
+  "forced_department": "safety",
+  "rules": [
+    {
+      "id": "SAFE_FIRE_SMOKE",
+      "description": "Fire, flames, or smoke detected in station or train",
+      "severity_score": 98,
+      "patterns": [
+        "\\b(fire|flames?|burning|smoke|spark|sparking|aag|dhua[an]?|dhunw[ao]|dhuwado|dhuvado|bhadko)\\b",
+        "आग|धुआं|धुँआ|चिनगारी|लपट",
+        "આગ|ધુમાડો|તણખા|બળવાની વાસ|ભડકો"
+      ]
+    },
+    {
+      "id": "SAFE_GAS_LEAK",
+      "description": "Gas smell, chemical odor, or dangerous fumes",
+      "severity_score": 95,
+      "patterns": [
+        "\\b(gas\\b.*?(leak|smell|odor)|fumes|toxic|chemical\\s*leak|gas\\b.*?(vas|boo))\\b",
+        "गैस.*?(लीक|गंध|बू)|जहरीली\\s*गैस",
+        "ગેસ.*?(લીક|વાસ)|ઝેરી\\s*ગેસ|રસાયણ|ગૂંગળામણ"
+      ]
+    },
+    {
+      "id": "SAFE_TRACK_INTRUSION",
+      "description": "Person on track, fell on rails, or jumped",
+      "severity_score": 100,
+      "patterns": [
+        "\\b(fell|fallen|jumped|person|child|man|woman|manas|koi)\\b.*?\\b(track|tracks|rails|railway|patari|pata)\\b",
+        "\\b(track|tracks|patari|pata|patri)\\b.*?(par|pe|upar|per)\\b.*?(giri|pada|padi|kood|kooda|chadhi|chalyo|manas|jump|fall|fell)",
+        "\\b(track\\s*par|pata\\s*par|patari\\s*par)\\b",
+        "(पटरी|ट्रैक).*?(पर|पे).*?(गिर|कूद|पड़ा|गया|व्यक्ति)",
+        "(પાટા|ટ્રેક).*?(પર|ઉપર).*?(પડ્યા|પડી|કૂદ્યા|કૂદી|ગયા|માણસ|વ્યક્તિ)"
+      ]
+    },
+    {
+      "id": "SAFE_TRAPPED_PERSON",
+      "description": "Person trapped in lift, escalator or train doors",
+      "severity_score": 92,
+      "patterns": [
+        "\\b(stuck|trapped|locked|fast|phasa|phase|atkayo|atkaya)\\b.*?\\b(lift|elevator|door|doors|escalator)\\b",
+        "\\b(lift|elevator|door|doors|escalator)\\b.*?\\b(stuck|trapped|fas|phas|atkai|atak|bandh|khultu\\s*nathi)\\b",
+        "(लिफ्ट|दरवाजे|एस्केलेटर).*?(फंस|अटक|बंद)",
+        "(લિફ્ટ|દરવાજા|એસ્કેલેટર).*?(ફસા|અટક|અંદર.*?માણસ)"
+      ]
+    },
+    {
+      "id": "SAFE_INJURY_MEDICAL",
+      "description": "Injured, bleeding, unconscious, heart attack or medical emergency",
+      "severity_score": 94,
+      "patterns": [
+        "\\b(injured|bleeding|blood|unconscious|fainted|head\\s*injury|ambulance|chot|ghayal|behosh|lohi|loh|khoon)\\b",
+        "घायल|चोट|खून|बेहोश|अचेत|रक्तस्राव|ऐम्बुलेंस",
+        "ઇજા|ઈજા|ઈજાગ્રસ્ત|લોહી|બેભાન|ચક્કર|એમ્બ્યુલન્સ"
+      ]
+    },
+    {
+      "id": "SAFE_HARASSMENT_VIOLENCE",
+      "description": "Harassment, eve teasing, physical fight, sexual assault, theft by force",
+      "severity_score": 90,
+      "patterns": [
+        "\\b(harass(ed|ment|ing)?|molest(ed|ation)?|assault|fighting|maarpeet|chhed[ck]had|chhadti|chhedti|eve\\s*teasing|hathapai)\\b",
+        "छेड़छाड़|मारपीट|हमला|बदतमीजी|हाथापाई|यौन\\s*उत्पीड़न",
+        "છેડતી|હુમલો|મારામારી|હાથાપાઈ|સતામણી"
+      ]
+    },
+    {
+      "id": "SAFE_CHILD_ALONE",
+      "description": "Unaccompanied minor or missing child",
+      "severity_score": 88,
+      "patterns": [
+        "\\b(child|kid|toddler|bachha|balak)\\b.*?(alone|lost|wandering|ro\\s*raha|eklu|khowayelu)\\b",
+        "\\b(alone|lost|wandering|khowayelu|eklu)\\b.*?(child|kid|toddler|bachha|balak)\\b",
+        "(अकेला|गुमशुदा|खोया).*?(बच्चा|बच्ची|बालक)",
+        "(એકલું|ખોવાયેલું|રઝળતું).*?(બાળક|છોકરું|છોકરો)"
+      ]
+    },
+    {
+      "id": "SAFE_ELECTRICAL_HAZARD",
+      "description": "Live wire, exposed cable, sparking electrical box",
+      "severity_score": 86,
+      "patterns": [
+        "\\b(live\\s*wire|exposed\\s*wire|electric\\s*shock|short\\s*circuit|open\\s*wire|current\\s*lag)\\b",
+        "खुला\\s*तार|बिजली\\s*का\\s*झटका|करंट|शॉर्ट\\s*सर्किट",
+        "ખુલ્લો\\s*વાયર|વીજળીનો\\s*ઝટકો|કરંટ|શોર્ટ\\s*સર્કિટ"
+      ]
+    },
+    {
+      "id": "SAFE_SUSPICIOUS_OBJECT",
+      "description": "Unattended bag, bomb scare, suspicious packet",
+      "severity_score": 90,
+      "patterns": [
+        "\\b(unattended\\b.*\\b(bag|baggage|luggage|box|package)|bomb|suspicious\\s*(object|package|bag)|lawaris\\s*bag|lavaris)\\b",
+        "लावारिस\\s*(बैग|सामान|वस्तु)|बम|संदिग्ध\\s*(पैकेट|वस्तु)",
+        "લાવારિસ\\s*(બેગ|સામાન|વસ્તુ)|બોમ્બ|શંકાસ્પદ\\s*(સામાન|વસ્તુ)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  ingest-service:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    container_name: metro_cte_ingest
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./metro_cte.db
+    volumes:
+      - ../data:/app/data
+    restart: unless-stopped

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metro CTE — Complaint Triage Engine & Station Controller</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="brand">
+      <div class="logo-icon">🚇</div>
+      <div>
+        <div class="brand-title">Metro Complaint Triage System</div>
+        <div class="brand-subtitle">PS-07 · On-Device Multilingual Triage & Outbox Sync</div>
+      </div>
+    </div>
+
+    <div class="nav-controls">
+      <!-- Station Selector -->
+      <div class="control-group">
+        <label for="stationSelect">Station:</label>
+        <select id="stationSelect">
+          <option value="">All Stations (HQ View)</option>
+          <option value="STN_PALDI" selected>STN_PALDI (Paldi)</option>
+          <option value="STN_KALUPUR">STN_KALUPUR (Kalupur)</option>
+          <option value="STN_CENTRAL">STN_CENTRAL (Old High Court)</option>
+          <option value="STN_APMC">STN_APMC (APMC)</option>
+          <option value="STN_THALTEJ">STN_THALTEJ (Thaltej)</option>
+        </select>
+      </div>
+
+      <!-- Network State Simulator (Offline/Online) -->
+      <div class="network-toggle-box">
+        <span class="status-indicator online" id="netDot"></span>
+        <span id="netLabel" class="net-text">Online</span>
+        <button id="toggleNetBtn" class="btn btn-sm btn-outline">Go Offline</button>
+      </div>
+
+      <!-- Outbox Sync Button -->
+      <button id="syncNowBtn" class="btn btn-sm btn-primary">
+        🔄 Sync Outbox (<span id="outboxCount">0</span>)
+      </button>
+
+      <!-- New Complaint Button -->
+      <button id="newComplaintBtn" class="btn btn-sm btn-accent">+ New / OCR Ingest</button>
+    </div>
+  </header>
+
+  <!-- P1 Urgent Safety Alert Banner -->
+  <div id="safetyAlertBanner" class="safety-banner hidden">
+    <div class="banner-content">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <strong>CRITICAL SAFETY ALERT (P1):</strong> Immediate intervention required at platform / track level.
+        <span id="safetyAlertText" class="alert-details"></span>
+      </div>
+    </div>
+    <button id="dismissBannerBtn" class="btn-dismiss">&times;</button>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-layout">
+    <!-- Sidebar / KPIs & Filters -->
+    <aside class="sidebar">
+      <div class="kpi-grid">
+        <div class="kpi-card p1-card">
+          <div class="kpi-val" id="kpiP1">0</div>
+          <div class="kpi-label">P1 Safety Alerts</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiTotal">0</div>
+          <div class="kpi-label">Active In Queue</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiSLA">0</div>
+          <div class="kpi-label">SLA Breaches (>15m)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiOutbox">0</div>
+          <div class="kpi-label">Pending Sync</div>
+        </div>
+      </div>
+
+      <div class="section-title">Department Queues</div>
+      <div class="filter-tabs" id="deptTabs">
+        <button class="filter-tab active" data-dept="">All Departments <span class="badge" id="bAll">0</span></button>
+        <button class="filter-tab safety-tab" data-dept="safety">🚨 Safety & Security <span class="badge" id="bSafety">0</span></button>
+        <button class="filter-tab" data-dept="cleanliness">🧹 Cleanliness & Hygiene <span class="badge" id="bClean">0</span></button>
+        <button class="filter-tab" data-dept="lifts_escalators">🛗 Lifts & Escalators <span class="badge" id="bLift">0</span></button>
+        <button class="filter-tab" data-dept="fare">💳 Fare & Smart Cards <span class="badge" id="bFare">0</span></button>
+        <button class="filter-tab" data-dept="staff_behaviour">👮 Staff Behaviour <span class="badge" id="bStaff">0</span></button>
+        <button class="filter-tab" data-dept="other">ℹ️ Other / General <span class="badge" id="bOther">0</span></button>
+      </div>
+
+      <div class="section-title">Priority Filter</div>
+      <div class="priority-pills" id="priorityPills">
+        <button class="p-pill active" data-prio="">All</button>
+        <button class="p-pill p1" data-prio="P1">P1</button>
+        <button class="p-pill p2" data-prio="P2">P2</button>
+        <button class="p-pill p3" data-prio="P3">P3</button>
+        <button class="p-pill preview" data-prio="REVIEW">REVIEW</button>
+      </div>
+
+      <div class="section-title">Repeat Location Hotspots</div>
+      <div id="hotspotsList" class="hotspots-container">
+        <div class="empty-hint">Loading hotspots...</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Search & View Bar -->
+      <div class="view-header">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search complaints (Gujarati, Hindi, English, Gujlish)...">
+        </div>
+        <div class="view-toggles">
+          <button id="viewQueueBtn" class="tab-btn active">Live Queue</button>
+          <button id="viewAnalyticsBtn" class="tab-btn">Ops Analytics & Audit</button>
+        </div>
+      </div>
+
+      <!-- Live Queue Section -->
+      <section id="queueSection" class="queue-container">
+        <div id="complaintsList" class="cards-list">
+          <!-- Rendered dynamically -->
+          <div class="loading-state">Loading complaints...</div>
+        </div>
+      </section>
+
+      <!-- Analytics Section (hidden by default) -->
+      <section id="analyticsSection" class="analytics-container hidden">
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3>Department Breakdown</h3>
+            <div id="deptBarChart" class="bar-chart"></div>
+          </div>
+          <div class="analytics-card">
+            <h3>Complainant Language Mix</h3>
+            <div id="langBarChart" class="bar-chart"></div>
+          </div>
+          <div class="analytics-card full-width">
+            <h3>Controller Override & Review Audit Log</h3>
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Complaint ID</th>
+                  <th>Controller / Actor</th>
+                  <th>Field Modified</th>
+                  <th>Old Value</th>
+                  <th>New Value</th>
+                </tr>
+              </thead>
+              <tbody id="auditTableBody">
+                <tr><td colspan="6" class="text-center">No overrides recorded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Ingest / OCR Simulator Modal -->
+  <div id="ingestModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>+ New Passenger Grievance / OCR Form Ingest</h3>
+        <button id="closeModalBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="sample-chips">
+          <span class="chip-label">Quick Test Scenarios:</span>
+          <button class="chip" data-lang="gu" data-dept="safety" data-text="પ્લેટફોર્મ 2 પર ટ્રેક પર ધુમાડો નીકળે છે અને આગ લાગી છે!">Gujarati Safety (આગ)</button>
+          <button class="chip" data-lang="gl" data-dept="lifts_escalators" data-text="Platform 1 par lift bandh chhe ane vradhdh loko heran thay chhe">Gujlish Lift (bandh chhe)</button>
+          <button class="chip" data-lang="hi" data-dept="fare" data-text="स्मार्ट कार्ड रिचार्ज किया लेकिन पैसे कट गए और कार्ड में नहीं आया">Hindi Fare (कार्ड रिचार्ज)</button>
+          <button class="chip" data-lang="en" data-dept="cleanliness" data-text="Washroom near Gate 2 is dirty and overflowing with trash">English Cleanliness</button>
+          <button class="chip" data-lang="gl" data-dept="staff_behaviour" data-text="Counter par staff bahu rudely vat kare chhe ticket apya vagar">Gujlish Staff</button>
+        </div>
+
+        <div class="form-group">
+          <label>Station ID:</label>
+          <select id="modalStation">
+            <option value="STN_PALDI">STN_PALDI (Paldi)</option>
+            <option value="STN_KALUPUR">STN_KALUPUR (Kalupur)</option>
+            <option value="STN_CENTRAL">STN_CENTRAL (Old High Court)</option>
+            <option value="STN_APMC">STN_APMC (APMC)</option>
+            <option value="STN_THALTEJ">STN_THALTEJ (Thaltej)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ingest Channel:</label>
+          <select id="modalChannel">
+            <option value="app">Mobile App</option>
+            <option value="social">Social Media (X / Twitter)</option>
+            <option value="email">Email Ingest</option>
+            <option value="paper">Paper Grievance Form (Digitized OCR)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Complaint Text (Raw):</label>
+          <textarea id="modalRawText" rows="4" placeholder="Enter passenger complaint in Gujarati, Hindi, English, or Gujlish..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelModalBtn" class="btn btn-secondary">Cancel</button>
+        <button id="submitTriageBtn" class="btn btn-primary">⚡ Ingest & Triage Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Reply Modal -->
+  <div id="replyModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit & Approve Draft Reply</h3>
+        <button id="closeReplyModalBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="replyComplaintId">
+        <div class="legal-warning">
+          <strong>⚠️ Operational Guardrail:</strong> Do not admit legal liability or make unconditional financial refund promises in passenger communications.
+        </div>
+        <div class="form-group">
+          <label>Draft Response (in Complainant's Language):</label>
+          <textarea id="replyTextarea" rows="4"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelReplyBtn" class="btn btn-secondary">Cancel</button>
+        <button id="approveReplyBtn" class="btn btn-primary">✓ Approve & Dispatch</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

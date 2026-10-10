@@ -1,0 +1,36 @@
+{
+  "language": "en",
+  "version": "1.0.0",
+  "templates": {
+    "safety": {
+      "P1": "Dear Passenger, your report regarding safety at {station} (Ref: {ticket_id}) has been immediately dispatched to the station safety controller and emergency response team. The area is being inspected. If you are in immediate danger, please contact station security or alert the train operator.",
+      "P2": "Dear Passenger, your safety observation at {station} (Ref: {ticket_id}) has been logged with our safety supervisor for prompt inspection. Thank you for helping keep our metro safe.",
+      "P3": "Dear Passenger, thank you for your feedback regarding {station} (Ref: {ticket_id}). It has been forwarded to the safety review desk."
+    },
+    "cleanliness": {
+      "P1": "Dear Passenger, your urgent sanitation report at {station} (Ref: {ticket_id}) has been assigned to the on-duty housekeeping team for priority clearing.",
+      "P2": "Dear Passenger, thank you for bringing this to our attention. Your cleanliness report for {station} (Ref: {ticket_id}) has been assigned to the station housekeeping supervisor for cleaning.",
+      "P3": "Dear Passenger, thank you for your feedback regarding cleanliness at {station} (Ref: {ticket_id}). Our maintenance schedule has noted your remarks."
+    },
+    "fare": {
+      "P1": "Dear Passenger, your fare ticketing issue at {station} (Ref: {ticket_id}) has been escalated to the station ticketing supervisor. Please present your card or receipt at the customer service desk at {station} for immediate on-site reconciliation.",
+      "P2": "Dear Passenger, your complaint regarding ticketing/recharge at {station} (Ref: {ticket_id}) has been registered with the revenue audit team. Automated reconciliations occur within 24 to 48 hours.",
+      "P3": "Dear Passenger, thank you for your fare query (Ref: {ticket_id}). The ticketing team has logged your transaction inquiry for verification."
+    },
+    "lifts_escalators": {
+      "P1": "Dear Passenger, your report of an urgent lift/escalator fault at {station} (Ref: {ticket_id}) has been escalated to the technical station engineering crew on duty.",
+      "P2": "Dear Passenger, thank you for reporting the lift/escalator issue at {station} (Ref: {ticket_id}). The electromechanical maintenance team has been alerted for inspection.",
+      "P3": "Dear Passenger, thank you for notifying us regarding the lift/escalator at {station} (Ref: {ticket_id}). It has been recorded in the daily equipment maintenance roster."
+    },
+    "staff_behaviour": {
+      "P1": "Dear Passenger, your serious concern regarding staff conduct at {station} (Ref: {ticket_id}) has been recorded by Station Operations Management. An internal review is underway.",
+      "P2": "Dear Passenger, thank you for your report regarding customer service at {station} (Ref: {ticket_id}). It has been forwarded to the station superintendent for review with the involved staff.",
+      "P3": "Dear Passenger, thank you for your feedback regarding station staff at {station} (Ref: {ticket_id}). It has been logged for our customer service quality training records."
+    },
+    "other": {
+      "P1": "Dear Passenger, your priority issue at {station} (Ref: {ticket_id}) has been noted by the station controller for immediate attention.",
+      "P2": "Dear Passenger, thank you for contacting metro customer care regarding {station} (Ref: {ticket_id}). Your comments have been forwarded to the relevant department.",
+      "P3": "Dear Passenger, thank you for sharing your feedback with metro customer care (Ref: {ticket_id})."
+    }
+  }
+}

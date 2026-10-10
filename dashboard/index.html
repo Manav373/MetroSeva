@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTE Ops Dashboard · Metro Head Office</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --p1-red: #ef4444;
+      --p1-bg: rgba(239, 68, 68, 0.15);
+      --p2-orange: #f59e0b;
+      --p2-bg: rgba(245, 158, 11, 0.15);
+      --p3-green: #10b981;
+      --p3-bg: rgba(16, 185, 129, 0.15);
+      --review-purple: #a855f7;
+      --review-bg: rgba(168, 85, 247, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #111827;
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #ef4444, #3b82f6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .brand h1 { font-size: 1.25rem; font-weight: 600; }
+    .brand span { font-size: 0.8rem; color: var(--text-muted); }
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 9999px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .alert-banner {
+      background: var(--p1-bg);
+      border: 1px solid var(--p1-red);
+      border-left: 6px solid var(--p1-red);
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .alert-banner.hidden { display: none; }
+    .alert-title {
+      font-weight: 700;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.05rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+    .stat-card .val { font-size: 1.75rem; font-weight: 700; margin-top: 0.5rem; }
+    .stat-card.p1 .val { color: var(--p1-red); }
+    .stat-card.p2 .val { color: var(--p2-orange); }
+    .stat-card.p3 .val { color: var(--p3-green); }
+    .stat-card.total .val { color: var(--primary); }
+
+    .control-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { background: #334155; color: #fff; }
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+    .search-input {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      width: 250px;
+    }
+    .btn-action {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    th {
+      background: #111827;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    tr.is-p1 {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 4px solid var(--p1-red);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .badge-p1 { background: var(--p1-bg); color: var(--p1-red); border: 1px solid var(--p1-red); }
+    .badge-p2 { background: var(--p2-bg); color: var(--p2-orange); border: 1px solid var(--p2-orange); }
+    .badge-p3 { background: var(--p3-bg); color: var(--p3-green); border: 1px solid var(--p3-green); }
+    .badge-review { background: var(--review-bg); color: var(--review-purple); border: 1px solid var(--review-purple); }
+    .badge-lang {
+      background: #334155;
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 650px;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+    .detail-box {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      padding: 0.85rem;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-logo">M</div>
+      <div>
+        <h1>Metro Complaint Triage Engine</h1>
+        <span>Operations & Safety Surveillance Dashboard (Head Office)</span>
+      </div>
+    </div>
+    <div class="server-status">
+      <div class="pulse-dot"></div>
+      <span id="apiStatus">API: Connected (Port 8000)</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="p1Banner" class="alert-banner hidden">
+      <div>
+        <div class="alert-title">🚨 ACTIVE SAFETY-CRITICAL ALERTS (<span id="p1Count">0</span>)</div>
+        <p style="font-size: 0.85rem; color: #fca5a5; margin-top: 0.25rem;" id="p1DetailText">
+          Immediate emergency attention required across metro stations.
+        </p>
+      </div>
+      <button class="btn-action" style="background: var(--p1-red);" onclick="filterPriority('P1')">View P1 Queue</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <h3>TOTAL INGESTED</h3>
+        <div class="val" id="statTotal">--</div>
+      </div>
+      <div class="stat-card p1">
+        <h3>P1 (SAFETY-CRITICAL)</h3>
+        <div class="val" id="statP1">--</div>
+      </div>
+      <div class="stat-card p2">
+        <h3>P2 (SERVICE IMPACT)</h3>
+        <div class="val" id="statP2">--</div>
+      </div>
+      <div class="stat-card p3">
+        <h3>P3 (ROUTINE)</h3>
+        <div class="val" id="statP3">--</div>
+      </div>
+    </div>
+
+    <div class="control-bar">
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="filterDept('all', this)">All Queues</button>
+        <button class="filter-btn" onclick="filterDept('safety', this)">Safety</button>
+        <button class="filter-btn" onclick="filterDept('cleanliness', this)">Cleanliness</button>
+        <button class="filter-btn" onclick="filterDept('fare', this)">Fare</button>
+        <button class="filter-btn" onclick="filterDept('lifts_escalators', this)">Lifts & Escalators</button>
+        <button class="filter-btn" onclick="filterDept('staff_behaviour', this)">Staff Behaviour</button>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search text or station..." oninput="handleSearch()">
+        <button class="btn-action" onclick="openTestModal()">+ Ingest Test Complaint</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Station</th>
+            <th>Raw Complaint</th>
+            <th>Language</th>
+            <th>Department</th>
+            <th>Urgency</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="complaintTableBody">
+          <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading complaints...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Inspection / Controller Action Modal -->
+  <div id="inspectModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">Complaint Details</h2>
+        <button class="modal-close" onclick="closeModal('inspectModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Ingest Modal -->
+  <div id="testModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Simulate Passenger Ingest</h2>
+        <button class="modal-close" onclick="closeModal('testModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>Station ID:</label>
+        <input type="text" id="testStation" class="search-input" style="width: 100%;" value="STN_PALDI">
+        
+        <label>Channel:</label>
+        <select id="testChannel" class="search-input" style="width: 100%;">
+          <option value="app">Passenger Mobile App</option>
+          <option value="social">Social Media Export</option>
+          <option value="email">Email (.eml)</option>
+          <option value="paper">Paper Form OCR</option>
+        </select>
+
+        <label>Complaint Text (Supports Gujarati, Hindi, English, Gujlish):</label>
+        <textarea id="testText" class="search-input" style="width: 100%; height: 90px; font-family: sans-serif;" placeholder="e.g. Platform par aag lagli che urgently police moklo"></textarea>
+        
+        <button class="btn-action" onclick="submitTestComplaint()" style="margin-top: 0.5rem;">Run Triage & Ingest</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+    let allComplaints = [];
+    let currentDept = 'all';
+    let currentPriority = null;
+
+    async function loadData() {
+      try {
+        const statsRes = await fetch(`${API_BASE}/v1/dashboard/stats`);
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('statTotal').innerText = stats.total_complaints;
+          document.getElementById('statP1').innerText = stats.priority_breakdown.P1 || 0;
+          document.getElementById('statP2').innerText = stats.priority_breakdown.P2 || 0;
+          document.getElementById('statP3').innerText = stats.priority_breakdown.P3 || 0;
+
+          const p1Count = stats.p1_active_count || 0;
+          const p1Banner = document.getElementById('p1Banner');
+          if (p1Count > 0) {
+            p1Banner.classList.remove('hidden');
+            document.getElementById('p1Count').innerText = p1Count;
+          } else {
+            p1Banner.classList.add('hidden');
+          }
+        }
+
+        const queueRes = await fetch(`${API_BASE}/v1/dashboard/queue?limit=100`);
+        if (queueRes.ok) {
+          allComplaints = await queueRes.json();
+          renderTable();
+        }
+      } catch (err) {
+        console.error("Failed to connect to API:", err);
+        document.getElementById('apiStatus').innerText = "API: Offline / Reconnecting...";
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('complaintTableBody');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = allComplaints.filter(c => {
+        if (currentDept !== 'all' && c.dept_primary !== currentDept) return false;
+        if (currentPriority && c.priority !== currentPriority) return false;
+        if (search) {
+          const textMatch = (c.raw_text || '').toLowerCase().includes(search);
+          const stnMatch = (c.station_id || '').toLowerCase().includes(search);
+          if (!textMatch && !stnMatch) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No complaints found for current filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => {
+        const isP1 = c.priority === 'P1';
+        const badgeClass = c.priority === 'P1' ? 'badge-p1' : c.priority === 'P2' ? 'badge-p2' : c.priority === 'REVIEW' ? 'badge-review' : 'badge-p3';
+        return `
+          <tr class="${isP1 ? 'is-p1' : ''}">
+            <td><span class="badge ${badgeClass}">${c.priority}</span></td>
+            <td style="font-weight: 600;">${c.station_id}</td>
+            <td style="max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.raw_text}</td>
+            <td><span class="badge-lang">${c.lang_detected || 'en'}</span></td>
+            <td style="text-transform: capitalize;">${(c.dept_primary || 'other').replace('_', ' ')}</td>
+            <td style="font-weight: 700; color: ${c.urgency >= 80 ? 'var(--p1-red)' : c.urgency >= 50 ? 'var(--p2-orange)' : 'var(--p3-green)'}">${c.urgency}</td>
+            <td>
+              <button class="filter-btn" onclick='inspectComplaint(${JSON.stringify(c).replace(/'/g, "&#39;")})'>Review</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function inspectComplaint(c) {
+      document.getElementById('modalTitle').innerText = `Review Ticket: ${c.id.slice(0, 8)} (${c.station_id})`;
+      const safetyHtml = (c.safety_hits && c.safety_hits.length > 0)
+        ? `<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--p1-red); padding: 0.6rem; border-radius: 6px; color: #fca5a5; font-size: 0.8rem;">
+            <strong>🚨 Safety Rules Triggered:</strong> ${c.safety_hits.map(r => r.id).join(', ')}
+           </div>`
+        : '';
+
+      document.getElementById('modalBody').innerHTML = `
+        ${safetyHtml}
+        <div>
+          <label style="color: var(--text-muted); font-size: 0.8rem;">RAW COMPLAINT (IMMUTABLE)</label>
+          <div class="detail-box">${c.raw_text}</div>
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 0.8rem;">NORMALIZED TEXT</label>
+          <div class="detail-box">${c.normalised || c.raw_text}</div>
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 0.8rem;">DRAFT RESPONSE (${c.reply_lang || 'en'})</label>
+          <div class="detail-box" style="border-color: #3b82f6;">${c.reply_draft || 'No draft generated'}</div>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <div style="flex: 1;">
+            <label style="color: var(--text-muted); font-size: 0.8rem;">RECLASSIFY DEPARTMENT</label>
+            <select id="reclassDept" class="search-input" style="width: 100%; margin-top: 0.25rem;">
+              <option value="safety" ${c.dept_primary === 'safety' ? 'selected' : ''}>Safety</option>
+              <option value="cleanliness" ${c.dept_primary === 'cleanliness' ? 'selected' : ''}>Cleanliness</option>
+              <option value="fare" ${c.dept_primary === 'fare' ? 'selected' : ''}>Fare</option>
+              <option value="lifts_escalators" ${c.dept_primary === 'lifts_escalators' ? 'selected' : ''}>Lifts & Escalators</option>
+              <option value="staff_behaviour" ${c.dept_primary === 'staff_behaviour' ? 'selected' : ''}>Staff Behaviour</option>
+              <option value="other" ${c.dept_primary === 'other' ? 'selected' : ''}>Other</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button class="btn-action" onclick="saveControllerReview('${c.id}', '${c.dept_primary}')">Save Correction</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('inspectModal').classList.remove('hidden');
+    }
+
+    async function saveControllerReview(id, oldDept) {
+      const newDept = document.getElementById('reclassDept').value;
+      if (newDept === oldDept) {
+        closeModal('inspectModal');
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/v1/complaints/${id}/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            actor: 'head_office_supervisor',
+            field: 'dept_primary',
+            old_value: oldDept,
+            new_value: newDept,
+            notes: 'Supervisor manual override'
+          })
+        });
+        if (res.ok) {
+          closeModal('inspectModal');
+          loadData();
+        }
+      } catch (err) {
+        alert("Failed to save review: " + err);
+      }
+    }
+
+    function filterDept(dept, btn) {
+      currentDept = dept;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderTable();
+    }
+
+    function filterPriority(prio) {
+      currentPriority = currentPriority === prio ? null : prio;
+      renderTable();
+    }
+
+    function handleSearch() {
+      renderTable();
+    }
+
+    function openTestModal() {
+      document.getElementById('testModal').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    async function submitTestComplaint() {
+      const text = document.getElementById('testText').value.trim();
+      const station = document.getElementById('testStation').value.trim();
+      const channel = document.getElementById('testChannel').value;
+      if (!text) return alert("Please enter complaint text");
+
+      try {
+        const res = await fetch(`${API_BASE}/v1/complaints`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ station_id: station, channel: channel, raw_text: text })
+        });
+        if (res.ok) {
+          closeModal('testModal');
+          document.getElementById('testText').value = '';
+          loadData();
+        }
+      } catch (err) {
+        alert("Error submitting: " + err);
+      }
+    }
+
+    // Initialize and poll every 5 seconds
+    loadData();
+    setInterval(loadData, 5000);
+  </script>
+</body>
+</html>
