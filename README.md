@@ -13,7 +13,10 @@
   <img src="https://img.shields.io/badge/Safety_Recall-≥98%25-red" alt="Safety Recall"/>
   <img src="https://img.shields.io/badge/Offline-72h+-green" alt="72h Offline"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License"/>
+  <a href="https://cte-liard.vercel.app"><img src="https://img.shields.io/badge/Vercel-Live_Deployment-black?logo=vercel&logoColor=white" alt="Vercel Live"/></a>
 </p>
+
+> 🚀 **Live Production Deployment:** [https://cte-liard.vercel.app](https://cte-liard.vercel.app)
 
 ---
 
