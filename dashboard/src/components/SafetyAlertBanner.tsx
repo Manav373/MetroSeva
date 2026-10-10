@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { Complaint } from '../types';
 
 interface SafetyAlertBannerProps {
@@ -20,28 +20,31 @@ export const SafetyAlertBanner: React.FC<SafetyAlertBannerProps> = ({
   return (
     <div className="safety-banner" role="alert">
       <div className="safety-banner-content">
-        <span className="safety-banner-icon">
-          <AlertTriangle color="#fca5a5" />
-        </span>
+        <span className="safety-pill-tag">P1 / CRITICAL</span>
         <div>
-          <strong>CRITICAL SAFETY ALERT (P1 Floor):</strong> Station <strong>[{topP1.station_id}]</strong>{' '}
-          {hitNames ? `— Trigger: [${hitNames}]` : ''} — "{topP1.raw_text.substring(0, 95)}..."
+          <strong style={{ color: '#fff', letterSpacing: '0.02em' }}>
+            [{topP1.station_id}]
+          </strong>{' '}
+          <span style={{ color: 'rgba(255,255,255,0.7)' }}>
+            {hitNames ? `TRIGGER: ${hitNames} — ` : ''}"{topP1.raw_text.substring(0, 90)}..."
+          </span>
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <button
           className="btn btn-outline"
-          style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', background: 'rgba(0,0,0,0.3)', color: '#fff' }}
+          style={{ padding: '0.35rem 0.75rem', fontSize: '0.72rem' }}
           onClick={() => onJumpToCard(topP1.id)}
         >
-          Inspect Complaint
+          <span>INSPECT</span>
+          <ArrowRight size={12} />
         </button>
         <button
           onClick={onDismiss}
           style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex' }}
           title="Dismiss Alert"
         >
-          <X size={18} />
+          <X size={16} />
         </button>
       </div>
     </div>

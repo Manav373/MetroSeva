@@ -18,36 +18,43 @@ export const KPIGrid: React.FC<KPIGridProps> = ({
 }) => {
   return (
     <>
-      <div className="section-heading">Operational Status</div>
+      <div className="section-heading">
+        <span>01 / Telemetry</span>
+        <span>LIVE</span>
+      </div>
       <div className="kpi-grid">
         <div className="kpi-box p1-box">
-          <span className="kpi-val">{p1Count}</span>
-          <span className="kpi-label">P1 Safety Alerts</span>
+          <span className="kpi-val">{String(p1Count).padStart(2, '0')}</span>
+          <span className="kpi-label">P1 Safety</span>
         </div>
         <div className="kpi-box">
-          <span className="kpi-val">{totalCount}</span>
-          <span className="kpi-label">Active In Queue</span>
+          <span className="kpi-val">{String(totalCount).padStart(2, '0')}</span>
+          <span className="kpi-label">Active Queue</span>
         </div>
         <div className="kpi-box sla-box">
-          <span className="kpi-val">{slaBreaches}</span>
-          <span className="kpi-label">SLA Breaches (&gt;15m)</span>
+          <span className="kpi-val">{String(slaBreaches).padStart(2, '0')}</span>
+          <span className="kpi-label">SLA Breach</span>
         </div>
         <div className="kpi-box">
-          <span className="kpi-val">{outboxCount}</span>
-          <span className="kpi-label">Pending Sync</span>
+          <span className="kpi-val">{String(outboxCount).padStart(2, '0')}</span>
+          <span className="kpi-label">Outbox Sync</span>
         </div>
       </div>
 
-      <div style={{ marginTop: '0.85rem' }}>
-        <div className="section-heading">Repeat Hotspots (2h Window)</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+      <div style={{ marginTop: '1.5rem' }}>
+        <div className="section-heading">
+          <span>02 / Hotspots (2h Window)</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {hotspots.length === 0 ? (
-            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>No cluster hotspots detected</div>
+            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', padding: '0.5rem 0' }}>
+              No repeat clusters detected
+            </div>
           ) : (
             hotspots.slice(0, 5).map((h) => (
               <div key={h.station_id} className="hotspot-item">
-                <span>📍 {h.station_id}</span>
-                <span style={{ fontWeight: 700, color: '#38bdf8' }}>{h.count} reports</span>
+                <span>{h.station_id}</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{h.count} REPS</span>
               </div>
             ))
           )}

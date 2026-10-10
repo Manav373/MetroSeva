@@ -51,7 +51,7 @@ export interface Complaint {
 export interface OutboxItem {
   client_uuid: string;
   idempotency_key: string;
-  op_type: 'CREATE_COMPLAINT' | 'APPROVE_REPLY' | 'OVERRIDE_REVIEW';
+  op_type: 'CREATE_COMPLAINT' | 'APPROVE_REPLY' | 'OVERRIDE_REVIEW' | 'REVIEW_COMPLAINT';
   payload: any;
   created_at: string;
 }

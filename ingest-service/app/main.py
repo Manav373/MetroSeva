@@ -53,7 +53,11 @@ def root():
     }
 
 
-# Mount static dashboard if static build exists
-dashboard_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../dashboard/public"))
-if os.path.exists(dashboard_dir):
-    app.mount("/dashboard", StaticFiles(directory=dashboard_dir, html=True), name="dashboard")
+# Mount static dashboard if build exists (prefers React dist build, falls back to public)
+dashboard_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dashboard/dist"))
+dashboard_pub = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dashboard/public"))
+
+if os.path.exists(dashboard_dist):
+    app.mount("/dashboard", StaticFiles(directory=dashboard_dist, html=True), name="dashboard")
+elif os.path.exists(dashboard_pub):
+    app.mount("/dashboard", StaticFiles(directory=dashboard_pub, html=True), name="dashboard")

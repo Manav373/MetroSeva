@@ -53,7 +53,7 @@ export function saveStoredOutbox(outbox: OutboxItem[]) {
 }
 
 export function queueOutboxAction(
-  opType: 'CREATE_COMPLAINT' | 'APPROVE_REPLY' | 'OVERRIDE_REVIEW',
+  opType: 'CREATE_COMPLAINT' | 'APPROVE_REPLY' | 'OVERRIDE_REVIEW' | 'REVIEW_COMPLAINT',
   payload: any,
   clientUuid = 'station_controller_device_01'
 ): OutboxItem {

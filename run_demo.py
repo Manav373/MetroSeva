@@ -42,7 +42,7 @@ def main():
         print("🔗 Ops & Station UI:   http://localhost:8000/dashboard (or file://...)")
         
         # Open browser
-        webbrowser.open(dashboard_html)
+        webbrowser.open("http://localhost:8000/dashboard")
         
         print("\nPress Ctrl+C to terminate the server.\n")
         proc.wait()

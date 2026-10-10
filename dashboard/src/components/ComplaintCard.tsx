@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Edit3, ShieldAlert, Sparkles, FileText } from 'lucide-react';
+import { ArrowUpRight, Check, AlertOctagon } from 'lucide-react';
 import { Complaint } from '../types';
+import { formatTime, formatRelativeTime } from '../utils/dateUtils';
 
 interface ComplaintCardProps {
   complaint: Complaint;
@@ -19,72 +20,47 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
 
   const isP1 = complaint.priority === 'P1';
   const urgencyColor =
-    complaint.urgency >= 80 ? '#ef4444' : complaint.urgency >= 50 ? '#f59e0b' : '#38bdf8';
+    complaint.urgency >= 80 ? '#ef4444' : complaint.urgency >= 50 ? '#f59e0b' : '#3b82f6';
 
-  const langLabelMap: Record<string, { label: string; class: string }> = {
-    gu: { label: 'ગુજરાતી (gu)', class: 'gu' },
-    hi: { label: 'हिंदी (hi)', class: 'hi' },
-    'gu-latn': { label: 'Gujlish (gu-latn)', class: 'gu-latn' },
-    en: { label: 'English (en)', class: 'en' },
-  };
-
-  const langInfo = langLabelMap[complaint.reply_lang] || {
-    label: complaint.reply_lang,
-    class: 'en',
+  const langLabelMap: Record<string, string> = {
+    gu: 'ગુજરાતી (gu)',
+    hi: 'हिंदी (hi)',
+    'gu-latn': 'Gujlish (gu-latn)',
+    en: 'English (en)',
   };
 
   const isPendingOutbox = complaint.sync_state === 'pending';
 
   return (
-    <div
+    <article
       className={`complaint-card ${isP1 ? 'p1-card' : ''}`}
       id={`card-${complaint.id}`}
     >
-      {/* Top Bar */}
+      {/* Top Metadata Row */}
       <div className="card-top">
         <div className="card-badges">
           <span className={`badge-pill badge-${complaint.priority.toLowerCase()}`}>
-            {complaint.priority}
+            {isP1 && <AlertOctagon size={14} className="badge-icon" />}
+            {complaint.priority} {isP1 ? 'CRITICAL' : ''}
           </span>
-          <span className="station-pill">📍 {complaint.station_id}</span>
+          <span className="station-pill">
+            📍 {complaint.station_id.replace('STN_', '')}
+          </span>
           <span className="channel-pill">
-            Channel: {complaint.channel.toUpperCase()}
+            {complaint.channel.toUpperCase()}
           </span>
-          <span className={`lang-pill ${langInfo.class}`}>{langInfo.label}</span>
+          <span className="lang-pill">
+            {langLabelMap[complaint.reply_lang] || complaint.reply_lang.toUpperCase()}
+          </span>
           {isPendingOutbox && (
-            <span
-              style={{
-                background: '#f59e0b',
-                color: '#0f172a',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                padding: '0.15rem 0.5rem',
-                borderRadius: '4px',
-              }}
-            >
-              ⏳ Local Outbox
-            </span>
-          )}
-          {complaint.raw_image_ref && (
-            <span
-              style={{
-                background: '#475569',
-                color: '#fff',
-                fontSize: '0.72rem',
-                padding: '0.15rem 0.45rem',
-                borderRadius: '4px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-              }}
-            >
-              <FileText size={12} /> Paper Scan
+            <span className="outbox-queued-tag">
+              OUTBOX
             </span>
           )}
         </div>
 
         <div className="urgency-gauge">
-          <span>Urgency: {complaint.urgency}/100</span>
+          <span className="gauge-score-label">{complaint.urgency}/100</span>
           <div className="gauge-track">
             <div
               className="gauge-fill"
@@ -97,27 +73,19 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
         </div>
       </div>
 
-      {/* Complaint Body */}
-      <div>
+      {/* Main Passenger Grievance Text - BOLD, LARGE, HIGH-CONTRAST FOR PHONES */}
+      <div className="complaint-body-wrap">
         <div className="complaint-body-text">
           "{complaint.raw_text}"
         </div>
 
         {complaint.normalised && complaint.normalised !== complaint.raw_text && (
-          <div style={{ marginTop: '0.35rem' }}>
+          <div style={{ marginTop: '0.65rem' }}>
             <button
               onClick={() => setShowNormalised(!showNormalised)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#60a5fa',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                padding: 0,
-                textDecoration: 'underline',
-              }}
+              className="norm-toggle-btn"
             >
-              {showNormalised ? 'Hide Gujlish Canonical Normalization' : 'Show Gujlish Canonical Normalization'}
+              {showNormalised ? '[ - Hide Gujlish Tokens ]' : '[ + View Gujlish Normalization ]'}
             </button>
             {showNormalised && (
               <div className="norm-toggle-text">
@@ -128,7 +96,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
         )}
       </div>
 
-      {/* Safety Alert Tags */}
+      {/* Deterministic Safety Hits Tags */}
       {complaint.safety_hits && complaint.safety_hits.length > 0 && (
         <div className="safety-tags-container">
           {complaint.safety_hits.map((hit, idx) => {
@@ -136,107 +104,74 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
             const desc = typeof hit === 'object' ? hit.description : undefined;
             return (
               <span key={idx} className="safety-tag-item">
-                <ShieldAlert size={13} />
-                {hitId} {desc ? `— ${desc}` : ''}
+                <span>🚨 {hitId}</span>
+                {desc && <span className="safety-desc">({desc})</span>}
               </span>
             );
           })}
         </div>
       )}
 
-      {/* Classification Meta */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '1rem',
-          fontSize: '0.78rem',
-          color: '#94a3b8',
-          background: 'rgba(0,0,0,0.2)',
-          padding: '0.4rem 0.6rem',
-          borderRadius: '6px',
-        }}
-      >
+      {/* Classification Meta Pills */}
+      <div className="card-dept-meta-row">
         <span>
-          Primary: <strong style={{ color: '#fff', textTransform: 'capitalize' }}>{complaint.dept_primary.replace('_', ' ')}</strong>
+          Department: <strong>{complaint.dept_primary.replace('_', ' ').toUpperCase()}</strong>
         </span>
         {complaint.dept_secondary && (
           <span>
-            Secondary: <strong style={{ color: '#cbd5e1', textTransform: 'capitalize' }}>{complaint.dept_secondary.replace('_', ' ')}</strong>
+            Secondary: <strong>{complaint.dept_secondary.replace('_', ' ').toUpperCase()}</strong>
           </span>
         )}
         <span>
           Confidence: <strong>{Math.round(complaint.dept_conf * 100)}%</strong>
         </span>
-        {complaint.model_version && (
-          <span style={{ marginLeft: 'auto', color: '#64748b' }}>
-            Model: {complaint.model_version}
-          </span>
-        )}
       </div>
 
-      {/* Draft Reply Box */}
+      {/* AI Draft Reply Box */}
       <div className="draft-reply-box">
         <div className="draft-reply-header">
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <Sparkles size={13} color="#a855f7" /> Draft Reply ({langInfo.label})
-          </span>
-          <span
-            style={{
-              color: complaint.reply_status === 'approved' ? '#10b981' : '#94a3b8',
-              fontWeight: 700,
-            }}
-          >
-            Status: {complaint.reply_status.toUpperCase()}
+          <span>AI DRAFT RESPONSE ({complaint.reply_lang.toUpperCase()})</span>
+          <span className={`status-pill ${complaint.reply_status === 'approved' ? 'approved' : 'draft'}`}>
+            &bull; {complaint.reply_status.toUpperCase()}
           </span>
         </div>
         <div className="draft-reply-text">
-          "{complaint.reply_draft || 'Generating draft reply...'}"
+          "{complaint.reply_draft || 'Generating draft response...'}"
         </div>
       </div>
 
-      {/* Footer & Actions */}
+      {/* Card Footer Actions: BIG, THUMB-FRIENDLY FULL-WIDTH BUTTONS */}
       <div className="card-footer">
-        <span className="meta-timestamp">
-          Received: {new Date(complaint.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ID: <code>{complaint.id}</code>
-        </span>
+        <div className="meta-timestamp">
+          Received: {formatTime(complaint.created_at)} &bull; {formatRelativeTime(complaint.created_at)} &bull; ID: <code>{complaint.id.substring(0, 12)}</code>
+        </div>
 
         <div className="card-actions-row">
           <button
-            className="btn btn-outline"
-            style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}
+            className="btn btn-outline btn-mobile-action"
             onClick={() => onOpenReview(complaint)}
           >
-            <Edit3 size={13} />
-            Review / Override
+            <span>EDIT / OVERRIDE</span>
+            <ArrowUpRight size={15} />
           </button>
 
           {complaint.reply_status === 'approved' ? (
-            <span
-              style={{
-                color: '#10b981',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-                padding: '0.4rem 0.6rem',
-              }}
-            >
-              <CheckCircle2 size={15} /> Dispatched
-            </span>
+            <div className="approved-dispatched-box">
+              <Check size={18} />
+              <span>APPROVED &amp; SENT</span>
+            </div>
           ) : (
             <button
-              className="btn btn-success"
-              style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+              className="btn btn-success btn-mobile-action"
               onClick={() => onApproveReply(complaint.id)}
               disabled={isApproving}
             >
-              <CheckCircle2 size={14} />
-              Approve Draft
+              <Check size={18} />
+              <span>APPROVE DISPATCH</span>
             </button>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };

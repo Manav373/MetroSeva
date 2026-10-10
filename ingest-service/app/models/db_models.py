@@ -33,6 +33,13 @@ class Complaint(Base):
     updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc))
 
     def to_dict(self):
+        def _fmt(dt):
+            if not dt:
+                return None
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+            return dt.isoformat()
+
         return {
             "id": self.id,
             "station_id": self.station_id,
@@ -53,8 +60,8 @@ class Complaint(Base):
             "model_version": self.model_version,
             "rule_version": self.rule_version,
             "sync_state": self.sync_state,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": _fmt(self.created_at),
+            "updated_at": _fmt(self.updated_at),
         }
 
 
@@ -70,6 +77,9 @@ class ReviewEvent(Base):
     at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), index=True)
 
     def to_dict(self):
+        dt = self.at
+        if dt and dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
         return {
             "id": self.id,
             "complaint_id": self.complaint_id,
@@ -77,7 +87,7 @@ class ReviewEvent(Base):
             "field": self.field,
             "old_value": self.old_value,
             "new_value": self.new_value,
-            "at": self.at.isoformat() if self.at else None,
+            "at": dt.isoformat() if dt else None,
         }
 
 
@@ -95,13 +105,16 @@ class OutboxItem(Base):
     synced = Column(Boolean, default=False, index=True)
 
     def to_dict(self):
+        dt = self.created_at
+        if dt and dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
         return {
             "id": self.id,
             "client_uuid": self.client_uuid,
             "idempotency_key": self.idempotency_key,
             "op_type": self.op_type,
             "payload": json.loads(self.payload) if self.payload else {},
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": dt.isoformat() if dt else None,
             "attempts": self.attempts,
             "last_error": self.last_error,
             "synced": self.synced,

@@ -1,9 +1,9 @@
-import { Complaint, OutboxItem, StatsOverview, Hotspot, ReviewEvent } from '../types';
+import { Complaint, StatsOverview, Hotspot, ReviewEvent } from '../types';
+import { parseIsoDate } from '../utils/dateUtils';
 import {
   getStoredComplaints,
   saveStoredComplaints,
   getStoredOutbox,
-  saveStoredOutbox,
   queueOutboxAction,
   clearOutbox,
   triageOnDevice
@@ -186,6 +186,7 @@ export class ApiService {
     queueOutboxAction('APPROVE_REPLY', {
       complaint_id: complaintId,
       custom_text: customText,
+      custom_reply: customText,
       actor
     });
 
@@ -309,7 +310,7 @@ export class ApiService {
     });
 
     const cutoff = Date.now() - 15 * 60000;
-    const sla = items.filter(c => c.priority === 'P1' && c.reply_status === 'draft' && new Date(c.created_at).getTime() < cutoff).length;
+    const sla = items.filter(c => c.priority === 'P1' && c.reply_status === 'draft' && parseIsoDate(c.created_at).getTime() < cutoff).length;
 
     return {
       total_complaints: items.length,

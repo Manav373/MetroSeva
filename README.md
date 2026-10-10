@@ -1,6 +1,6 @@
-# Complaint Triage Engine (CTE) · Metro Operations
+# MetroSeva · Metro Complaint Triage Engine (CTE)
 
-The **Complaint Triage Engine (CTE)** is a high-reliability, offline-first triage system designed for metro stations. It ingests passenger complaints in **Gujarati, Hindi, English, and Gujlish** (Latin transliteration), sorts them across 5 core departments with an auditable safety floor, drafts legally compliant replies in the complainant's language, and synchronizes via an offline outbox queue.
+The **MetroSeva** (Complaint Triage Engine) is a high-reliability, offline-first triage system designed for metro stations. It ingests passenger complaints in **Gujarati, Hindi, English, and Gujlish** (Latin transliteration), sorts them across 5 core departments with an auditable safety floor, drafts legally compliant replies in the complainant's language, and synchronizes via an offline outbox queue.
 
 ---
 

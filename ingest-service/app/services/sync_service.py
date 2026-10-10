@@ -98,7 +98,7 @@ class SyncService:
                         status = "accepted"
                         synced_count += 1
 
-                elif op_type == "REVIEW_COMPLAINT":
+                elif op_type in ("REVIEW_COMPLAINT", "OVERRIDE_REVIEW"):
                     complaint_id = payload.get("complaint_id")
                     actor = payload.get("actor", client_uuid)
                     field = payload.get("field")
@@ -131,8 +131,9 @@ class SyncService:
                     target = db.query(Complaint).filter(Complaint.id == complaint_id).first()
                     if target:
                         target.reply_status = "approved"
-                        if "custom_reply" in payload and payload["custom_reply"]:
-                            target.reply_draft = payload["custom_reply"]
+                        custom_reply = payload.get("custom_reply") or payload.get("custom_text")
+                        if custom_reply:
+                            target.reply_draft = custom_reply
                         target.updated_at = datetime.datetime.now(datetime.timezone.utc)
                         status = "accepted"
                         server_id = complaint_id

@@ -1,5 +1,6 @@
 import React from 'react';
 import { StatsOverview, ReviewEvent } from '../types';
+import { formatTime, formatRelativeTime } from '../utils/dateUtils';
 
 interface AnalyticsViewProps {
   stats: StatsOverview | null;
@@ -8,7 +9,7 @@ interface AnalyticsViewProps {
 
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, auditLogs }) => {
   if (!stats) {
-    return <div style={{ color: '#94a3b8', padding: '2rem' }}>Loading analytics...</div>;
+    return <div style={{ color: 'var(--text-muted)', padding: '2rem' }}>Loading analytics...</div>;
   }
 
   const renderBarChart = (title: string, dataMap: Record<string, number>) => {
@@ -20,7 +21,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, auditLogs }
         <h3>{title}</h3>
         <div className="chart-bars-list">
           {entries.length === 0 ? (
-            <div style={{ color: '#64748b', fontSize: '0.8rem' }}>No data available</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>No data available</div>
           ) : (
             entries.map(([label, count]) => {
               const pct = Math.round((count / maxVal) * 100);
@@ -51,7 +52,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, auditLogs }
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h3>Controller Override &amp; Retraining Audit Trail</h3>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
               Every human controller correction is recorded as active learning ground truth for model bundle retraining.
             </div>
           </div>
@@ -73,7 +74,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, auditLogs }
             <tbody>
               {auditLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: '1.5rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
                     No manual controller overrides logged yet.
                   </td>
                 </tr>
@@ -82,7 +83,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, auditLogs }
                   <tr key={log.id}>
                     <td>
                       {log.at
-                        ? new Date(log.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        ? `${formatTime(log.at)} (${formatRelativeTime(log.at)})`
                         : 'N/A'}
                     </td>
                     <td>
@@ -96,8 +97,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, auditLogs }
                         {log.field}
                       </span>
                     </td>
-                    <td style={{ color: '#94a3b8' }}>{log.old_value || '—'}</td>
-                    <td style={{ color: '#10b981', fontWeight: 600 }}>{log.new_value}</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{log.old_value || '—'}</td>
+                    <td style={{ color: 'var(--signal-green)', fontWeight: 600 }}>{log.new_value}</td>
                   </tr>
                 ))
               )}

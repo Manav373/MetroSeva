@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertCircle, Save, Send } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { Complaint, Department, PriorityLevel } from '../types';
 
 interface ComplaintDetailModalProps {
@@ -63,28 +63,29 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <div className="modal-title">Complaint Review &amp; Human-in-the-Loop Override</div>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-              Ticket: <code>{complaint.id}</code> · Station: <strong>{complaint.station_id}</strong>
+            <div className="modal-title">Human-in-the-Loop Override &bull; Audit Trail</div>
+            <div style={{ fontSize: '0.72rem', fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+              ID: {complaint.id} &bull; NODE: {complaint.station_id}
             </div>
           </div>
           <button className="modal-close-btn" onClick={onClose}>
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         <div className="modal-body">
           {/* Raw Text Box */}
           <div className="form-group">
-            <label className="form-label">Passenger Original Complaint (Raw Text — Immutable):</label>
+            <label className="form-label">Passenger Original Text (Immutable Record):</label>
             <div
               style={{
-                background: '#090d16',
-                border: '1px solid #334155',
-                padding: '0.85rem',
-                borderRadius: '6px',
-                fontSize: '0.92rem',
-                color: '#f8fafc',
+                background: 'var(--bg-box)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: '8px',
+                padding: '1rem',
+                fontSize: '0.94rem',
+                color: 'var(--text-primary)',
+                lineHeight: 1.5,
               }}
             >
               "{complaint.raw_text}"
@@ -102,12 +103,12 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
                   value={selectedDept}
                   onChange={(e) => setSelectedDept(e.target.value as Department)}
                 >
-                  <option value="safety">🚨 Safety & Security</option>
-                  <option value="cleanliness">🧹 Cleanliness & Hygiene</option>
-                  <option value="lifts_escalators">🛗 Lifts & Escalators</option>
-                  <option value="fare">💳 Fare & Smart Cards</option>
-                  <option value="staff_behaviour">👮 Staff Behaviour</option>
-                  <option value="other">ℹ️ Other / General</option>
+                  <option value="safety">SAFETY &amp; SECURITY</option>
+                  <option value="cleanliness">CLEANLINESS</option>
+                  <option value="lifts_escalators">LIFTS &amp; ESCALATORS</option>
+                  <option value="fare">FARE &amp; AFC CARDS</option>
+                  <option value="staff_behaviour">STAFF CONDUCT</option>
+                  <option value="other">GENERAL / OTHER</option>
                 </select>
                 {selectedDept !== complaint.dept_primary && (
                   <button
@@ -115,9 +116,8 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
                     style={{ padding: '0.4rem 0.65rem' }}
                     onClick={handleOverrideDept}
                     disabled={isSaving}
-                    title="Log Department correction for model active learning"
                   >
-                    <Save size={14} />
+                    SAVE
                   </button>
                 )}
               </div>
@@ -132,10 +132,10 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
                   value={selectedPriority}
                   onChange={(e) => setSelectedPriority(e.target.value as PriorityLevel)}
                 >
-                  <option value="P1">P1 (Safety Critical &ge;80)</option>
-                  <option value="P2">P2 (Service Impacting 50-79)</option>
-                  <option value="P3">P3 (Routine &lt;50)</option>
-                  <option value="REVIEW">REVIEW (Human Review)</option>
+                  <option value="P1">P1 (CRITICAL &ge;80)</option>
+                  <option value="P2">P2 (SERVICE IMPACT)</option>
+                  <option value="P3">P3 (ROUTINE)</option>
+                  <option value="REVIEW">REVIEW (UNCERTAIN)</option>
                 </select>
                 {selectedPriority !== complaint.priority && (
                   <button
@@ -143,9 +143,8 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
                     style={{ padding: '0.4rem 0.65rem' }}
                     onClick={handleOverridePriority}
                     disabled={isSaving}
-                    title="Log Priority adjustment"
                   >
-                    <Save size={14} />
+                    SAVE
                   </button>
                 )}
               </div>
@@ -154,10 +153,10 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
 
           {/* Legal Guardrail Box */}
           <div className="legal-box">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, marginBottom: '0.2rem' }}>
-              <AlertCircle size={15} /> Operational Legal Guardrail (TRD Section 5.4)
-            </div>
-            Replies must acknowledge and dispatch action without admitting legal liability or guaranteeing financial refunds/reimbursements without supervisor sign-off.
+            <strong style={{ color: 'var(--text-primary)', textTransform: 'uppercase', fontFamily: 'JetBrains Mono', display: 'block', marginBottom: '0.2rem' }}>
+              Operational Legal Guardrail (TRD 5.4)
+            </strong>
+            Replies must acknowledge action without admitting civil liability or guaranteeing financial refunds without supervisor approval.
           </div>
 
           {/* Draft Reply Editor */}
@@ -170,7 +169,7 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
               rows={4}
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Enter edited response in complainant's language..."
+              placeholder="Edit draft response..."
             />
           </div>
         </div>
@@ -184,8 +183,8 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
             onClick={handleApprove}
             disabled={isSaving || !replyText.trim()}
           >
-            <Send size={14} />
-            Approve &amp; Dispatch Reply
+            <span>APPROVE &amp; DISPATCH</span>
+            <ArrowRight size={13} />
           </button>
         </div>
       </div>
