@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, RefreshCw, Sun, Moon, MapPin, ChevronDown } from 'lucide-react';
 
 interface NavbarProps {
@@ -12,6 +12,9 @@ interface NavbarProps {
   onOpenIngest: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  activeView: 'landing' | 'queue' | 'analytics';
+  onSelectView: (view: 'landing' | 'queue' | 'analytics') => void;
+  queueCount: number;
 }
 
 const STATIONS = [
@@ -34,10 +37,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenIngest,
   theme,
   onToggleTheme,
+  activeView,
+  onSelectView,
+  queueCount,
 }) => {
   const [showStationPicker, setShowStationPicker] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (showStationPicker) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -54,31 +60,59 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <header className="navbar">
-        {/* Mobile Left: Native Station Switcher Pill */}
-        <div className="mobile-station-picker-wrap">
+        {/* Left: Brand Monogram & Title (Always Visible) */}
+        <div className="brand-section">
+          <div
+            className="brand-link-wrap"
+            onClick={() => onSelectView('landing')}
+            title="Go to Overview"
+          >
+            <div className="brand-monogram">M</div>
+            <div className="brand-info">
+              <div className="brand-title">Metro / CTE</div>
+              <div className="brand-sub desktop-only">PS-07 Station Cockpit</div>
+            </div>
+          </div>
+
+          {/* Desktop Nav View Switcher Pills */}
+          <nav className="desktop-nav-tabs desktop-only">
+            <button
+              className={`nav-tab-pill ${activeView === 'landing' ? 'active' : ''}`}
+              onClick={() => onSelectView('landing')}
+            >
+              Overview
+            </button>
+            <button
+              className={`nav-tab-pill ${activeView === 'queue' ? 'active' : ''}`}
+              onClick={() => onSelectView('queue')}
+            >
+              Live Queue [{queueCount}]
+            </button>
+            <button
+              className={`nav-tab-pill ${activeView === 'analytics' ? 'active' : ''}`}
+              onClick={() => onSelectView('analytics')}
+            >
+              Telemetry &amp; Audit
+            </button>
+          </nav>
+        </div>
+
+        {/* Mobile-Only Station Selector Pill */}
+        <div className="mobile-station-picker-wrap mobile-only">
           <button
             className="mobile-station-btn"
             onClick={() => setShowStationPicker(!showStationPicker)}
             aria-label="Switch Station Node"
           >
-            <MapPin size={16} className="pin-icon" />
+            <MapPin size={15} className="pin-icon" />
             <span className="station-name-text">{currentStationLabel}</span>
             <ChevronDown size={14} />
           </button>
         </div>
 
-        {/* Desktop Brand Info */}
-        <div className="brand-section desktop-only">
-          <div className="brand-monogram">M</div>
-          <div className="brand-info">
-            <div className="brand-title">Metro / CTE</div>
-            <div className="brand-sub">PS-07 Station Cockpit</div>
-          </div>
-        </div>
-
-        {/* Action Controls */}
+        {/* Right: Actions */}
         <div className="nav-actions">
-          {/* Desktop Station Select */}
+          {/* Desktop Station Selector (Single instance on desktop) */}
           <div className="control-item desktop-only">
             <select
               id="station-select"

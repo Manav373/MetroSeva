@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck, Activity, Train, Database } from 'lucide-react';
 
 interface FooterProps {
   isOffline: boolean;
@@ -8,102 +8,143 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ isOffline, outboxCount }) => {
   return (
-    <footer className="nothin-footer">
-      {/* Editorial Headline Statement */}
-      <div className="footer-statement">
-        <h2 className="footer-statement-headline">
-          Safety precedes speed.<br />
-          Clarity precedes automation.
-        </h2>
-        <p className="footer-statement-sub">
-          A protean grievance triage engine for Ahmedabad &amp; Gandhinagar Metro Operations. 
-          Deterministic safety floors, canonical Gujlish lexicons, and offline-first transactional outbox for station controllers who refuse the generic.
-        </p>
-      </div>
-
-      {/* Nothin' Editorial Columns Grid */}
-      <div className="nothin-footer-grid">
-        {/* Column 1: Core System Telemetry */}
-        <div className="nothin-col">
-          <div className="nothin-col-label">01 / Operational State</div>
-          <div className="nothin-telemetry">
-            <div className="telemetry-row">
-              <span>ENGINE MODE</span>
-              <strong style={{ color: isOffline ? '#e5a93c' : '#22c55e' }}>
-                {isOffline ? 'OFFLINE PLATFORM' : 'CENTRAL ONLINE'}
-              </strong>
-            </div>
-            <div className="telemetry-row">
-              <span>PENDING OUTBOX</span>
-              <strong style={{ color: '#fff' }}>{outboxCount} ITEMS</strong>
-            </div>
-            <div className="telemetry-row">
-              <span>SAFETY FLOOR</span>
-              <strong style={{ color: '#ff3333' }}>&ge; 98.0% RECALL</strong>
-            </div>
-            <div className="telemetry-row">
-              <span>LATENCY BUDGET</span>
-              <strong style={{ color: '#fff' }}>&lt; 300MS / ITEM</strong>
-            </div>
+    <footer className="metro-footer">
+      <div className="metro-footer-inner">
+        {/* Operations Headline */}
+        <div className="footer-headline-band">
+          <div className="footer-brand-title">
+            <span className="footer-brand-badge">GMRC PS-07</span>
+            <h3>Metro Grievance Triage Engine</h3>
+            <p>
+              Automated multi-lingual complaint categorization, deterministic safety emergency routing, 
+              and offline-first station controller workflows for Ahmedabad &amp; Gandhinagar Metro Network.
+            </p>
+          </div>
+          <div className="footer-status-pill">
+            <span className={`status-indicator-dot ${isOffline ? 'offline' : 'online'}`} />
+            <span>{isOffline ? 'OFFLINE STATION MODE' : 'CENTRAL OCC LIVE ONLINE'}</span>
           </div>
         </div>
 
-        {/* Column 2: Ingest Channels */}
-        <div className="nothin-col">
-          <div className="nothin-col-label">02 / Ingestion</div>
-          <ul className="nothin-link-list">
-            <li><span>Passenger App (REST)</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>P0</span></li>
-            <li><span>Social Feeds (X CSV)</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>BATCH</span></li>
-            <li><span>Email Relay (.eml)</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>MIME</span></li>
-            <li><span>Paper Forms (OCR)</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>GUJ/HIN</span></li>
-          </ul>
+        {/* 4 Balanced Columns */}
+        <div className="metro-footer-grid">
+          {/* Column 1: Core System Telemetry */}
+          <div className="metro-col">
+            <div className="metro-col-header">
+              <Activity size={14} />
+              <span>Operational Telemetry</span>
+            </div>
+            <div className="metro-telemetry-list">
+              <div className="telemetry-item">
+                <span className="t-label">Network Mode</span>
+                <span className={`t-val ${isOffline ? 'amber' : 'green'}`}>
+                  {isOffline ? 'Offline Platform' : 'Central Cloud'}
+                </span>
+              </div>
+              <div className="telemetry-item">
+                <span className="t-label">Queued Outbox</span>
+                <span className="t-val">{outboxCount} Actions Pending</span>
+              </div>
+              <div className="telemetry-item">
+                <span className="t-label">Safety Floor Recall</span>
+                <span className="t-val red">&ge; 98.0% Guaranteed</span>
+              </div>
+              <div className="telemetry-item">
+                <span className="t-label">Inference Target</span>
+                <span className="t-val">&lt; 180ms Sub-Second</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Ingestion Pipelines */}
+          <div className="metro-col">
+            <div className="metro-col-header">
+              <Database size={14} />
+              <span>Ingestion Channels</span>
+            </div>
+            <ul className="metro-link-list">
+              <li>
+                <span>Passenger App</span>
+                <span className="badge-tag">REST API</span>
+              </li>
+              <li>
+                <span>Social Feeds (X Feeds)</span>
+                <span className="badge-tag">BATCH OCR</span>
+              </li>
+              <li>
+                <span>Station Email Relay</span>
+                <span className="badge-tag">MIME .EML</span>
+              </li>
+              <li>
+                <span>Physical Paper Forms</span>
+                <span className="badge-tag">VISION OCR</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Active Station Corridors */}
+          <div className="metro-col">
+            <div className="metro-col-header">
+              <Train size={14} />
+              <span>Network Corridors</span>
+            </div>
+            <ul className="metro-link-list">
+              <li>
+                <span>Paldi Station</span>
+                <span className="corridor-tag">North-South Line</span>
+              </li>
+              <li>
+                <span>Kalupur Junction</span>
+                <span className="corridor-tag">Railway Interchange</span>
+              </li>
+              <li>
+                <span>Central (High Court)</span>
+                <span className="corridor-tag">East-West Line</span>
+              </li>
+              <li>
+                <span>Thaltej &amp; APMC Depots</span>
+                <span className="corridor-tag">Terminus Nodes</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Architecture & Compliance */}
+          <div className="metro-col">
+            <div className="metro-col-header">
+              <ShieldCheck size={14} />
+              <span>Standards &amp; Governance</span>
+            </div>
+            <ul className="metro-link-list">
+              <li>
+                <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">
+                  <span>FastAPI OpenAPI Spec</span>
+                  <ArrowUpRight size={13} />
+                </a>
+              </li>
+              <li>
+                <span>Model Quantization</span>
+                <span className="badge-tag">Int8 TFLite</span>
+              </li>
+              <li>
+                <span>Bundle Verification</span>
+                <span className="badge-tag">Ed25519 Signed</span>
+              </li>
+              <li>
+                <span>PII Privacy Retention</span>
+                <span className="badge-tag">90-Day Auto Purge</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* Column 3: Station Grid */}
-        <div className="nothin-col">
-          <div className="nothin-col-label">03 / Station Nodes</div>
-          <ul className="nothin-link-list">
-            <li><span>STN_PALDI</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>PLATFORM 1-2</span></li>
-            <li><span>STN_KALUPUR</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>JUNCTION</span></li>
-            <li><span>STN_CENTRAL</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>OLD HIGH COURT</span></li>
-            <li><span>STN_THALTEJ</span> <span className="font-mono" style={{ fontSize: '0.72rem' }}>TERMINUS</span></li>
-          </ul>
-        </div>
-
-        {/* Column 4: Architecture & Specs */}
-        <div className="nothin-col">
-          <div className="nothin-col-label">04 / Specifications</div>
-          <ul className="nothin-link-list">
-            <li>
-              <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">
-                <span>FastAPI Swagger Spec</span>
-                <ArrowUpRight size={14} className="arrow-icon" />
-              </a>
-            </li>
-            <li>
-              <a href="https://www.noth.in/" target="_blank" rel="noreferrer">
-                <span>Aesthetic: Nothin' Paris</span>
-                <ArrowUpRight size={14} className="arrow-icon" />
-              </a>
-            </li>
-            <li><span>Quantization: Int8 TFLite</span></li>
-            <li><span>Signing: Ed25519 Manifest</span></li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Massive Editorial Watermark Typography */}
-      <div className="nothin-watermark">
-        <div className="watermark-hero-type">NOTHIN' BUT TRIAGE</div>
-      </div>
-
-      {/* Bottom Legal Line */}
-      <div className="nothin-bottom-row">
-        <div>
-          &copy; 2026 METRO CTE — OPERATIONS &amp; SAFETY DIVISION — PS-07
-        </div>
-        <div>
-          ZERO LEGAL LIABILITY ADMISSION &bull; 90-DAY PII RETENTION PURGE &bull; SQLCIPHER ENCRYPTED
+        {/* Bottom Legal & Copyright Bar */}
+        <div className="metro-bottom-bar">
+          <div>
+            &copy; 2026 Gujarat Metro Rail Corporation (GMRC) &bull; Operations &amp; Safety Division &bull; PS-07 Complaint Triage Engine
+          </div>
+          <div className="bottom-meta">
+            SQLCipher Encrypted Local Kiosk Cache &bull; RDSO Transit Standards Compliant
+          </div>
         </div>
       </div>
     </footer>

@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { 
+  X, 
+  FileText, 
+  Check, 
+  Info,
+  Copy,
+  CheckCheck
+} from 'lucide-react';
 import { Complaint, Department, PriorityLevel } from '../types';
 
 interface ComplaintDetailModalProps {
@@ -26,6 +33,7 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
   const [selectedPriority, setSelectedPriority] = useState<PriorityLevel>('P3');
   const [replyText, setReplyText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [copiedDraft, setCopiedDraft] = useState(false);
 
   useEffect(() => {
     if (complaint) {
@@ -36,6 +44,14 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
   }, [complaint]);
 
   if (!complaint) return null;
+
+  const handleCopy = () => {
+    if (replyText) {
+      navigator.clipboard.writeText(replyText);
+      setCopiedDraft(true);
+      setTimeout(() => setCopiedDraft(false), 2000);
+    }
+  };
 
   const handleOverrideDept = async () => {
     if (selectedDept === complaint.dept_primary) return;
@@ -58,93 +74,100 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
     onClose();
   };
 
+  const hasDeptChanged = selectedDept !== complaint.dept_primary;
+  const hasPriorityChanged = selectedPriority !== complaint.priority;
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+        {/* Modal Header */}
         <div className="modal-header">
-          <div>
-            <div className="modal-title">Human-in-the-Loop Override &bull; Audit Trail</div>
-            <div style={{ fontSize: '0.72rem', fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              ID: {complaint.id} &bull; NODE: {complaint.station_id}
+          <div className="modal-header-info">
+            <div className="modal-title">Controller Override &amp; Review Studio</div>
+            <div className="modal-subtitle">
+              <span>Ticket: <code>{complaint.id}</code></span>
+              <span>&bull;</span>
+              <span>Station: <strong>{complaint.station_id.replace('STN_', '')}</strong></span>
+              <span>&bull;</span>
+              <span>Channel: <strong>{complaint.channel.toUpperCase()}</strong></span>
             </div>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={18} />
           </button>
         </div>
 
+        {/* Modal Body */}
         <div className="modal-body">
-          {/* Raw Text Box */}
+          {/* Passenger Original Grievance Text */}
           <div className="form-group">
-            <label className="form-label">Passenger Original Text (Immutable Record):</label>
-            <div
-              style={{
-                background: 'var(--bg-box)',
-                border: '1px solid var(--border-medium)',
-                borderRadius: '8px',
-                padding: '1rem',
-                fontSize: '0.94rem',
-                color: 'var(--text-primary)',
-                lineHeight: 1.5,
-              }}
-            >
-              "{complaint.raw_text}"
+            <div className="form-label-row">
+              <span className="form-label">Passenger Original Text (Immutable Log)</span>
+              <span className="meta-badge-small">{complaint.reply_lang.toUpperCase()}</span>
+            </div>
+            <div className="raw-complaint-box">
+              <FileText size={16} className="raw-box-icon" />
+              <div className="raw-box-text">"{complaint.raw_text}"</div>
             </div>
           </div>
 
-          {/* Department & Priority Overrides */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {/* Classification Overrides Grid */}
+          <div className="override-grid">
+            {/* Department Override */}
             <div className="form-group">
-              <label className="form-label">Department Classification:</label>
-              <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <div className="form-label-row">
+                <span className="form-label">Department Route</span>
+                {hasDeptChanged && <span className="override-pending-tag">Changed</span>}
+              </div>
+              <div className="select-with-save">
                 <select
                   className="input-select"
-                  style={{ flex: 1 }}
                   value={selectedDept}
                   onChange={(e) => setSelectedDept(e.target.value as Department)}
                 >
-                  <option value="safety">SAFETY &amp; SECURITY</option>
-                  <option value="cleanliness">CLEANLINESS</option>
-                  <option value="lifts_escalators">LIFTS &amp; ESCALATORS</option>
-                  <option value="fare">FARE &amp; AFC CARDS</option>
-                  <option value="staff_behaviour">STAFF CONDUCT</option>
-                  <option value="other">GENERAL / OTHER</option>
+                  <option value="safety">Safety &amp; Security</option>
+                  <option value="cleanliness">Cleanliness &amp; Hygiene</option>
+                  <option value="lifts_escalators">Lifts &amp; Escalators</option>
+                  <option value="fare">Fare &amp; AFC Cards</option>
+                  <option value="staff_behaviour">Staff Conduct</option>
+                  <option value="other">General / Other</option>
                 </select>
-                {selectedDept !== complaint.dept_primary && (
+                {hasDeptChanged && (
                   <button
-                    className="btn btn-primary"
-                    style={{ padding: '0.4rem 0.65rem' }}
+                    className="btn btn-primary btn-save-override"
                     onClick={handleOverrideDept}
                     disabled={isSaving}
                   >
-                    SAVE
+                    <span>Save</span>
                   </button>
                 )}
               </div>
             </div>
 
+            {/* Priority Override */}
             <div className="form-group">
-              <label className="form-label">Priority Level:</label>
-              <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <div className="form-label-row">
+                <span className="form-label">Priority Severity</span>
+                {hasPriorityChanged && <span className="override-pending-tag">Changed</span>}
+              </div>
+              <div className="select-with-save">
                 <select
                   className="input-select"
-                  style={{ flex: 1 }}
                   value={selectedPriority}
                   onChange={(e) => setSelectedPriority(e.target.value as PriorityLevel)}
                 >
-                  <option value="P1">P1 (CRITICAL &ge;80)</option>
-                  <option value="P2">P2 (SERVICE IMPACT)</option>
-                  <option value="P3">P3 (ROUTINE)</option>
-                  <option value="REVIEW">REVIEW (UNCERTAIN)</option>
+                  <option value="P1">P1 Critical (Urgency &ge; 80)</option>
+                  <option value="P2">P2 Medium Impact</option>
+                  <option value="P3">P3 Routine</option>
+                  <option value="REVIEW">Review (Uncertain)</option>
                 </select>
-                {selectedPriority !== complaint.priority && (
+                {hasPriorityChanged && (
                   <button
-                    className="btn btn-primary"
-                    style={{ padding: '0.4rem 0.65rem' }}
+                    className="btn btn-primary btn-save-override"
                     onClick={handleOverridePriority}
                     disabled={isSaving}
                   >
-                    SAVE
+                    <span>Save</span>
                   </button>
                 )}
               </div>
@@ -153,27 +176,45 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
 
           {/* Legal Guardrail Box */}
           <div className="legal-box">
-            <strong style={{ color: 'var(--text-primary)', textTransform: 'uppercase', fontFamily: 'JetBrains Mono', display: 'block', marginBottom: '0.2rem' }}>
-              Operational Legal Guardrail (TRD 5.4)
-            </strong>
-            Replies must acknowledge action without admitting civil liability or guaranteeing financial refunds without supervisor approval.
+            <div className="legal-box-header">
+              <Info size={14} color="var(--signal-amber)" />
+              <strong>Operational Legal Guardrail (GMRC TRD 5.4)</strong>
+            </div>
+            <p>
+              Passenger responses acknowledge received feedback without admitting legal liability or promising unverified financial compensation. Human overrides are recorded into the active retraining dataset.
+            </p>
           </div>
 
           {/* Draft Reply Editor */}
           <div className="form-group">
-            <label className="form-label">
-              Draft Passenger Response ({complaint.reply_lang.toUpperCase()}):
-            </label>
+            <div className="form-label-row">
+              <span className="form-label">
+                Passenger Response Draft ({complaint.reply_lang.toUpperCase()}):
+              </span>
+              <button
+                type="button"
+                className="copy-draft-btn"
+                onClick={handleCopy}
+                title="Copy text"
+              >
+                {copiedDraft ? <CheckCheck size={12} color="var(--signal-green)" /> : <Copy size={12} />}
+                <span>{copiedDraft ? 'COPIED' : 'COPY'}</span>
+              </button>
+            </div>
             <textarea
               className="form-textarea"
               rows={4}
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Edit draft response..."
+              placeholder="Edit response before dispatching..."
             />
+            <div className="char-count-text">
+              {replyText.length} characters &bull; Language: {complaint.reply_lang.toUpperCase()}
+            </div>
           </div>
         </div>
 
+        {/* Modal Footer */}
         <div className="modal-footer">
           <button className="btn btn-outline" onClick={onClose} disabled={isSaving}>
             Cancel
@@ -183,8 +224,8 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
             onClick={handleApprove}
             disabled={isSaving || !replyText.trim()}
           >
-            <span>APPROVE &amp; DISPATCH</span>
-            <ArrowRight size={13} />
+            <Check size={16} />
+            <span>Approve &amp; Dispatch</span>
           </button>
         </div>
       </div>

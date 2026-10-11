@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, ShieldAlert } from 'lucide-react';
 import { Complaint } from '../types';
 
 interface SafetyAlertBannerProps {
@@ -18,35 +18,42 @@ export const SafetyAlertBanner: React.FC<SafetyAlertBannerProps> = ({
   const hitNames = topP1.safety_hits?.map((h) => (typeof h === 'string' ? h : h.id || 'SAFETY_RULE')).join(', ');
 
   return (
-    <div className="safety-banner" role="alert">
+    <aside className="safety-banner" role="alert" aria-label="Critical P1 Safety Alert">
       <div className="safety-banner-content">
-        <span className="safety-pill-tag">P1 / CRITICAL</span>
-        <div>
-          <strong style={{ color: '#fff', letterSpacing: '0.02em' }}>
-            [{topP1.station_id}]
-          </strong>{' '}
-          <span style={{ color: 'rgba(255,255,255,0.7)' }}>
-            {hitNames ? `TRIGGER: ${hitNames} — ` : ''}"{topP1.raw_text.substring(0, 90)}..."
+        <div className="safety-alert-indicator">
+          <ShieldAlert size={18} className="safety-icon-pulse" />
+          <span className="safety-pill-tag">P1 CRITICAL SAFETY</span>
+        </div>
+
+        <div className="safety-details-wrap">
+          <span className="safety-stn-badge">
+            📍 {topP1.station_id.replace('STN_', '')}
+          </span>
+          <span className="safety-text-snippet">
+            {hitNames ? <strong className="safety-hit-prefix">[{hitNames}] </strong> : ''}
+            "{topP1.raw_text.length > 90 ? `${topP1.raw_text.substring(0, 90)}...` : topP1.raw_text}"
           </span>
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+
+      <div className="safety-banner-actions">
         <button
-          className="btn btn-outline"
-          style={{ padding: '0.35rem 0.75rem', fontSize: '0.72rem' }}
+          className="btn btn-primary safety-jump-btn"
           onClick={() => onJumpToCard(topP1.id)}
+          title="Scroll to ticket"
         >
-          <span>INSPECT</span>
-          <ArrowRight size={12} />
+          <span>INSPECT NOW</span>
+          <ArrowRight size={13} />
         </button>
         <button
           onClick={onDismiss}
-          style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex' }}
-          title="Dismiss Alert"
+          className="safety-dismiss-btn"
+          title="Dismiss banner"
+          aria-label="Dismiss banner"
         >
           <X size={16} />
         </button>
       </div>
-    </div>
+    </aside>
   );
 };

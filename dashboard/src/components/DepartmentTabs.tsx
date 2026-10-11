@@ -1,4 +1,17 @@
 import React from 'react';
+import { 
+  ShieldAlert, 
+  Sparkles, 
+  ArrowUpDown, 
+  CreditCard, 
+  UserCheck, 
+  HelpCircle,
+  LayoutGrid,
+  Smartphone,
+  Share2,
+  Mail,
+  FileText
+} from 'lucide-react';
 import { Department, PriorityLevel, IngestChannel } from '../types';
 
 interface DepartmentTabsProps {
@@ -11,30 +24,35 @@ interface DepartmentTabsProps {
   onSelectChannel: (chan: string) => void;
 }
 
-const DEPARTMENTS: { id: Department | ''; num: string; label: string }[] = [
-  { id: '', num: '00', label: 'All Queues' },
-  { id: 'safety', num: '01', label: 'Safety & Security' },
-  { id: 'cleanliness', num: '02', label: 'Cleanliness & Hygiene' },
-  { id: 'lifts_escalators', num: '03', label: 'Lifts & Escalators' },
-  { id: 'fare', num: '04', label: 'Fare & AFC Cards' },
-  { id: 'staff_behaviour', num: '05', label: 'Staff Conduct' },
-  { id: 'other', num: '06', label: 'General / Other' },
+const DEPARTMENTS: { 
+  id: Department | ''; 
+  num: string; 
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { id: '', num: '00', label: 'All Queues', icon: <LayoutGrid size={14} /> },
+  { id: 'safety', num: '01', label: 'Safety & Security', icon: <ShieldAlert size={14} /> },
+  { id: 'cleanliness', num: '02', label: 'Cleanliness', icon: <Sparkles size={14} /> },
+  { id: 'lifts_escalators', num: '03', label: 'Lifts & Escalators', icon: <ArrowUpDown size={14} /> },
+  { id: 'fare', num: '04', label: 'Fare & Cards', icon: <CreditCard size={14} /> },
+  { id: 'staff_behaviour', num: '05', label: 'Staff Conduct', icon: <UserCheck size={14} /> },
+  { id: 'other', num: '06', label: 'General / Other', icon: <HelpCircle size={14} /> },
 ];
 
 const PRIORITIES: { id: PriorityLevel | ''; label: string; class: string }[] = [
   { id: '', label: 'ALL', class: 'all' },
-  { id: 'P1', label: 'P1', class: 'p1' },
-  { id: 'P2', label: 'P2', class: 'p2' },
-  { id: 'P3', label: 'P3', class: 'p3' },
+  { id: 'P1', label: 'P1 CRITICAL', class: 'p1' },
+  { id: 'P2', label: 'P2 MEDIUM', class: 'p2' },
+  { id: 'P3', label: 'P3 ROUTINE', class: 'p3' },
   { id: 'REVIEW', label: 'REVIEW', class: 'review' },
 ];
 
-const CHANNELS: { id: IngestChannel | ''; label: string }[] = [
-  { id: '', label: 'ALL' },
-  { id: 'app', label: 'APP' },
-  { id: 'social', label: 'SOCIAL' },
-  { id: 'email', label: 'EMAIL' },
-  { id: 'paper', label: 'PAPER' },
+const CHANNELS: { id: IngestChannel | ''; label: string; icon: React.ReactNode }[] = [
+  { id: '', label: 'ALL', icon: <LayoutGrid size={12} /> },
+  { id: 'app', label: 'APP', icon: <Smartphone size={12} /> },
+  { id: 'social', label: 'SOCIAL', icon: <Share2 size={12} /> },
+  { id: 'email', label: 'EMAIL', icon: <Mail size={12} /> },
+  { id: 'paper', label: 'PAPER', icon: <FileText size={12} /> },
 ];
 
 export const DepartmentTabs: React.FC<DepartmentTabsProps> = ({
@@ -47,7 +65,8 @@ export const DepartmentTabs: React.FC<DepartmentTabsProps> = ({
   onSelectChannel,
 }) => {
   return (
-    <>
+    <div className="sidebar-filters-container">
+      {/* 1. Department Index */}
       <div>
         <div className="section-heading">
           <span>03 / Department Index</span>
@@ -67,19 +86,18 @@ export const DepartmentTabs: React.FC<DepartmentTabsProps> = ({
                 className={`dept-tab-btn ${isSafety ? 'safety-tab' : ''} ${isActive ? 'active' : ''}`}
                 onClick={() => onSelectDept(d.id)}
               >
-                <span>
-                  <span className="font-mono" style={{ opacity: 0.5, marginRight: '0.45rem', fontSize: '0.72rem' }}>
-                    {d.num}
-                  </span>
-                  {d.label}
-                </span>
-                <span className="count-badge">[{String(count).padStart(2, '0')}]</span>
+                <div className="dept-label-group">
+                  <span className="dept-icon">{d.icon}</span>
+                  <span className="dept-text">{d.label}</span>
+                </div>
+                <span className="count-badge">{count}</span>
               </button>
             );
           })}
         </div>
       </div>
 
+      {/* 2. Priority Severity Filter */}
       <div style={{ marginTop: '1.5rem' }}>
         <div className="section-heading">
           <span>04 / Priority Severity</span>
@@ -97,6 +115,7 @@ export const DepartmentTabs: React.FC<DepartmentTabsProps> = ({
         </div>
       </div>
 
+      {/* 3. Ingest Channel Source */}
       <div style={{ marginTop: '1.5rem' }}>
         <div className="section-heading">
           <span>05 / Channel Source</span>
@@ -108,11 +127,14 @@ export const DepartmentTabs: React.FC<DepartmentTabsProps> = ({
               className={`priority-pill ${selectedChannel === c.id ? 'active' : ''}`}
               onClick={() => onSelectChannel(c.id)}
             >
-              {c.label}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                {c.icon}
+                <span>{c.label}</span>
+              </span>
             </button>
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };

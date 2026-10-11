@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, LayoutList, BarChart3, Plus, RefreshCw, Sun, Moon } from 'lucide-react';
+import { Search, LayoutList, BarChart3, Plus, RefreshCw, Sparkles, X, Filter } from 'lucide-react';
 import { Complaint, StatsOverview, Hotspot, ReviewEvent, Department } from './types';
 import { ApiService } from './services/api';
 import { getStoredOutbox } from './services/offlineStorage';
 import { parseIsoDate } from './utils/dateUtils';
 import { Navbar } from './components/Navbar';
+import { LandingView } from './components/LandingView';
 import { SafetyAlertBanner } from './components/SafetyAlertBanner';
 import { KPIGrid } from './components/KPIGrid';
 import { DepartmentTabs } from './components/DepartmentTabs';
@@ -45,7 +46,7 @@ export const App: React.FC = () => {
   const [selectedPriority, setSelectedPriority] = useState<string>('');
   const [selectedChannel, setSelectedChannel] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeView, setActiveView] = useState<'queue' | 'analytics'>('queue');
+  const [activeView, setActiveView] = useState<'landing' | 'queue' | 'analytics'>('landing');
   const [isOffline, setIsOffline] = useState<boolean>(false);
 
   // Data State
@@ -181,7 +182,7 @@ export const App: React.FC = () => {
       )
     );
     if (reviewComplaint && reviewComplaint.id === complaintId) {
-      setReviewComplaint((prev) => (prev ? { ...prev, [field]: newValue } : null));
+      setReviewComplaint((prev: Complaint | null) => (prev ? { ...prev, [field]: newValue } : null));
     }
 
     const res = await ApiService.reviewOverride(complaintId, field, newValue);
@@ -270,107 +271,161 @@ export const App: React.FC = () => {
         onOpenIngest={() => setIsIngestOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
+        activeView={activeView}
+        onSelectView={setActiveView}
+        queueCount={complaints.length}
       />
 
-      {/* Critical P1 Safety Alert Banner */}
-      <SafetyAlertBanner
-        topP1={topP1}
-        onDismiss={() => setIsP1BannerDismissed(true)}
-        onJumpToCard={(id) => {
-          const el = document.getElementById(`card-${id}`);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }}
-      />
+      {/* VIEW 1: INTERACTIVE LANDING / OVERVIEW PORTAL */}
+      {activeView === 'landing' && (
+        <LandingView
+          stats={stats}
+          hotspots={hotspots}
+          onNavigateToQueue={(stnId) => {
+            if (stnId) setSelectedStation(stnId);
+            setActiveView('queue');
+          }}
+          onNavigateToAnalytics={() => setActiveView('analytics')}
+          onIngestComplaint={handleIngestSubmit}
+          isOffline={isOffline}
+        />
+      )}
 
-      {/* Mobile-Only Horizontal Department Strip (Big, Thumb-Friendly Filter Pills) */}
-      <nav className="mobile-dept-strip" aria-label="Mobile department selector">
-        {MOBILE_DEPARTMENTS.map((d) => {
-          const count = d.id === ''
-            ? complaints.length
-            : (deptCounts[d.id] || 0);
-          const isSafety = d.id === 'safety';
-          const isActive = selectedDept === d.id;
-
-          return (
-            <button
-              key={d.id}
-              className={`mobile-dept-pill ${isSafety ? 'safety-tab' : ''} ${isActive ? 'active' : ''}`}
-              onClick={() => setSelectedDept(d.id)}
-            >
-              <span className="pill-icon">{d.icon}</span>
-              <span className="pill-text">{d.label}</span>
-              <span className="pill-count">({count})</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="main-wrapper">
-        {/* Desktop Left Sidebar (Hidden on Phones) */}
-        <aside className="sidebar">
-          <KPIGrid
-            p1Count={p1Count}
-            totalCount={complaints.length}
-            slaBreaches={slaBreaches}
-            outboxCount={outboxCount}
-            hotspots={hotspots}
+      {/* VIEW 2: REAL-TIME OPERATIONAL QUEUE & COCKPIT */}
+      {activeView === 'queue' && (
+        <>
+          {/* Critical P1 Safety Alert Banner */}
+          <SafetyAlertBanner
+            topP1={topP1}
+            onDismiss={() => setIsP1BannerDismissed(true)}
+            onJumpToCard={(id) => {
+              const el = document.getElementById(`card-${id}`);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
           />
 
-          <DepartmentTabs
-            selectedDept={selectedDept}
-            onSelectDept={setSelectedDept}
-            deptCounts={deptCounts}
-            selectedPriority={selectedPriority}
-            onSelectPriority={setSelectedPriority}
-            selectedChannel={selectedChannel}
-            onSelectChannel={setSelectedChannel}
-          />
-        </aside>
+          {/* Mobile-Only Horizontal Department Strip (Big, Thumb-Friendly Filter Pills) */}
+          <nav className="mobile-dept-strip" aria-label="Mobile department selector">
+            {MOBILE_DEPARTMENTS.map((d) => {
+              const count = d.id === ''
+                ? complaints.length
+                : (deptCounts[d.id] || 0);
+              const isSafety = d.id === 'safety';
+              const isActive = selectedDept === d.id;
 
-        {/* Main Content: Search Toolbar & List or Analytics */}
-        <main className="main-content">
-          <div className="content-toolbar">
-            <div className="search-input-wrap">
-              <Search className="search-icon" size={18} />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search Gujarati, Hindi, English, Gujlish..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+              return (
+                <button
+                  key={d.id}
+                  className={`mobile-dept-pill ${isSafety ? 'safety-tab' : ''} ${isActive ? 'active' : ''}`}
+                  onClick={() => setSelectedDept(d.id)}
+                >
+                  <span className="pill-icon">{d.icon}</span>
+                  <span className="pill-text">{d.label}</span>
+                  <span className="pill-count">({count})</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="main-wrapper">
+            {/* Desktop Left Sidebar (Hidden on Phones) */}
+            <aside className="sidebar">
+              <KPIGrid
+                p1Count={p1Count}
+                totalCount={complaints.length}
+                slaBreaches={slaBreaches}
+                outboxCount={outboxCount}
+                hotspots={hotspots}
               />
-            </div>
 
-            {/* View Toggles on Desktop */}
-            <div className="view-tabs desktop-only">
-              <button
-                className={`view-tab ${activeView === 'queue' ? 'active' : ''}`}
-                onClick={() => setActiveView('queue')}
-              >
-                Queue ({complaints.length})
-              </button>
-              <button
-                className={`view-tab ${activeView === 'analytics' ? 'active' : ''}`}
-                onClick={() => setActiveView('analytics')}
-              >
-                Analytics &amp; Audit
-              </button>
-            </div>
-          </div>
+              <DepartmentTabs
+                selectedDept={selectedDept}
+                onSelectDept={setSelectedDept}
+                deptCounts={deptCounts}
+                selectedPriority={selectedPriority}
+                onSelectPriority={setSelectedPriority}
+                selectedChannel={selectedChannel}
+                onSelectChannel={setSelectedChannel}
+              />
+            </aside>
 
-          {/* Conditional View Rendering */}
-          {activeView === 'queue' ? (
-            <div className="complaints-list">
-              {complaints.length === 0 ? (
-                <div className="empty-queue-box">
-                  <p className="empty-title">No complaints matching current filter.</p>
-                  <p className="empty-sub">
-                    Tap the <strong>+</strong> button below to ingest test grievances in Gujarati, Hindi, or Gujlish.
-                  </p>
-                  {(selectedStation || selectedDept || selectedPriority || selectedChannel || searchQuery) && (
+            {/* Main Content: Search Toolbar & Complaints Cards */}
+            <main className="main-content">
+              <div className="content-toolbar">
+                <div className="search-input-wrap">
+                  <Search className="search-icon" size={18} />
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search Gujarati, Hindi, English, Gujlish..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                {/* View Toggles on Desktop */}
+                <div className="view-tabs desktop-only">
+                  <button
+                    className="view-tab"
+                    onClick={() => setActiveView('landing')}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    className="view-tab active"
+                    onClick={() => setActiveView('queue')}
+                  >
+                    Queue ({complaints.length})
+                  </button>
+                  <button
+                    className="view-tab"
+                    onClick={() => setActiveView('analytics')}
+                  >
+                    Analytics &amp; Audit
+                  </button>
+                </div>
+              </div>
+
+              {/* Active Filter Chips Strip */}
+              {(selectedStation || selectedDept || selectedPriority || selectedChannel || searchQuery) && (
+                <div className="active-filters-bar">
+                  <div className="active-filters-label">
+                    <Filter size={13} />
+                    <span>Active Filters:</span>
+                  </div>
+                  <div className="active-filters-list">
+                    {selectedStation && (
+                      <span className="filter-pill-tag">
+                        <span>Station: {selectedStation.replace('STN_', '')}</span>
+                        <button onClick={() => setSelectedStation('')} title="Remove filter"><X size={12} /></button>
+                      </span>
+                    )}
+                    {selectedDept && (
+                      <span className="filter-pill-tag">
+                        <span>Dept: {selectedDept.replace(/_/g, ' ')}</span>
+                        <button onClick={() => setSelectedDept('')} title="Remove filter"><X size={12} /></button>
+                      </span>
+                    )}
+                    {selectedPriority && (
+                      <span className="filter-pill-tag">
+                        <span>Priority: {selectedPriority}</span>
+                        <button onClick={() => setSelectedPriority('')} title="Remove filter"><X size={12} /></button>
+                      </span>
+                    )}
+                    {selectedChannel && (
+                      <span className="filter-pill-tag">
+                        <span>Channel: {selectedChannel.toUpperCase()}</span>
+                        <button onClick={() => setSelectedChannel('')} title="Remove filter"><X size={12} /></button>
+                      </span>
+                    )}
+                    {searchQuery && (
+                      <span className="filter-pill-tag">
+                        <span>Search: "{searchQuery}"</span>
+                        <button onClick={() => setSearchQuery('')} title="Clear search"><X size={12} /></button>
+                      </span>
+                    )}
                     <button
-                      className="btn btn-outline"
-                      style={{ marginTop: '1.25rem', padding: '0.6rem 1.4rem' }}
+                      className="clear-all-filters-btn"
                       onClick={() => {
                         setSelectedStation('');
                         setSelectedDept('');
@@ -379,27 +434,60 @@ export const App: React.FC = () => {
                         setSearchQuery('');
                       }}
                     >
-                      CLEAR ALL FILTERS
+                      Reset All
                     </button>
-                  )}
+                  </div>
                 </div>
-              ) : (
-                complaints.map((item) => (
-                  <ComplaintCard
-                    key={item.id}
-                    complaint={item}
-                    onOpenReview={setReviewComplaint}
-                    onApproveReply={handleApproveReply}
-                    isApproving={isApproving}
-                  />
-                ))
               )}
-            </div>
-          ) : (
-            <AnalyticsView stats={stats} auditLogs={auditLogs} />
-          )}
-        </main>
-      </div>
+
+              <div className="complaints-list">
+                {complaints.length === 0 ? (
+                  <div className="empty-queue-box">
+                    <p className="empty-title">No complaints matching current filter.</p>
+                    <p className="empty-sub">
+                      Tap the <strong>+</strong> button below to ingest test grievances in Gujarati, Hindi, or Gujlish.
+                    </p>
+                    {(selectedStation || selectedDept || selectedPriority || selectedChannel || searchQuery) && (
+                      <button
+                        className="btn btn-outline"
+                        style={{ marginTop: '1.25rem', padding: '0.6rem 1.4rem' }}
+                        onClick={() => {
+                          setSelectedStation('');
+                          setSelectedDept('');
+                          setSelectedPriority('');
+                          setSelectedChannel('');
+                          setSearchQuery('');
+                        }}
+                      >
+                        CLEAR ALL FILTERS
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  complaints.map((item) => (
+                    <ComplaintCard
+                      key={item.id}
+                      complaint={item}
+                      onOpenReview={setReviewComplaint}
+                      onApproveReply={handleApproveReply}
+                      isApproving={isApproving}
+                      onFilterStation={(stn) => setSelectedStation(stn)}
+                      onFilterDept={(dept) => setSelectedDept(dept)}
+                    />
+                  ))
+                )}
+              </div>
+            </main>
+          </div>
+        </>
+      )}
+
+      {/* VIEW 3: TELEMETRY & AUDIT LOGS */}
+      {activeView === 'analytics' && (
+        <div className="analytics-page-wrapper">
+          <AnalyticsView stats={stats} auditLogs={auditLogs} />
+        </div>
+      )}
 
       {/* Review / Human Override Modal (Bottom sheet on phone) */}
       <ComplaintDetailModal
@@ -427,19 +515,19 @@ export const App: React.FC = () => {
       {/* Phone Native Sticky Bottom Tab Bar */}
       <nav className="mobile-bottom-bar" aria-label="Mobile Navigation">
         <button
-          className={`mobile-nav-btn ${activeView === 'queue' ? 'active' : ''}`}
-          onClick={() => setActiveView('queue')}
+          className={`mobile-nav-btn ${activeView === 'landing' ? 'active' : ''}`}
+          onClick={() => setActiveView('landing')}
         >
-          <LayoutList size={22} />
-          <span className="btn-label">Queue</span>
+          <Sparkles size={21} />
+          <span className="btn-label">Overview</span>
         </button>
 
         <button
-          className={`mobile-nav-btn ${activeView === 'analytics' ? 'active' : ''}`}
-          onClick={() => setActiveView('analytics')}
+          className={`mobile-nav-btn ${activeView === 'queue' ? 'active' : ''}`}
+          onClick={() => setActiveView('queue')}
         >
-          <BarChart3 size={22} />
-          <span className="btn-label">Analytics</span>
+          <LayoutList size={21} />
+          <span className="btn-label">Queue</span>
         </button>
 
         {/* Big Center Thumb Action Button (FAB) */}
@@ -451,6 +539,14 @@ export const App: React.FC = () => {
           <Plus size={28} />
         </button>
 
+        <button
+          className={`mobile-nav-btn ${activeView === 'analytics' ? 'active' : ''}`}
+          onClick={() => setActiveView('analytics')}
+        >
+          <BarChart3 size={21} />
+          <span className="btn-label">Analytics</span>
+        </button>
+
         {/* Sync Outbox Button */}
         <button
           className="mobile-nav-btn"
@@ -458,18 +554,8 @@ export const App: React.FC = () => {
           disabled={isSyncing}
           title="Sync Outbox"
         >
-          <RefreshCw size={21} className={isSyncing ? 'spin' : ''} />
+          <RefreshCw size={20} className={isSyncing ? 'spin' : ''} />
           <span className="btn-label">Sync ({outboxCount})</span>
-        </button>
-
-        {/* Quick Theme Toggle */}
-        <button
-          className="mobile-nav-btn"
-          onClick={toggleTheme}
-          title="Toggle Light/Dark Theme"
-        >
-          {theme === 'dark' ? <Sun size={21} /> : <Moon size={21} />}
-          <span className="btn-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
       </nav>
     </div>

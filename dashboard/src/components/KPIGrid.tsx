@@ -1,4 +1,5 @@
 import React from 'react';
+import { ShieldAlert, ListFilter, AlertTriangle, RefreshCw, Flame } from 'lucide-react';
 import { Hotspot } from '../types';
 
 interface KPIGridProps {
@@ -17,49 +18,96 @@ export const KPIGrid: React.FC<KPIGridProps> = ({
   hotspots,
 }) => {
   return (
-    <>
+    <div className="sidebar-kpi-container">
+      {/* Telemetry Header */}
       <div className="section-heading">
-        <span>01 / Telemetry</span>
-        <span>LIVE</span>
+        <span>01 / System Telemetry</span>
+        <span className="live-telemetry-badge">
+          <span className="pulse-dot" /> LIVE
+        </span>
       </div>
+
+      {/* KPI 4-Cell Grid */}
       <div className="kpi-grid">
+        {/* P1 Safety Alert */}
         <div className="kpi-box p1-box">
+          <div className="kpi-header-row">
+            <ShieldAlert size={16} className="kpi-icon" />
+            <span className="kpi-tag-label">P1 Safety</span>
+          </div>
           <span className="kpi-val">{String(p1Count).padStart(2, '0')}</span>
-          <span className="kpi-label">P1 Safety</span>
+          <span className="kpi-caption">Active Critical</span>
         </div>
+
+        {/* Total Queue */}
         <div className="kpi-box">
+          <div className="kpi-header-row">
+            <ListFilter size={16} className="kpi-icon" />
+            <span className="kpi-tag-label">Queue</span>
+          </div>
           <span className="kpi-val">{String(totalCount).padStart(2, '0')}</span>
-          <span className="kpi-label">Active Queue</span>
+          <span className="kpi-caption">Total Tickets</span>
         </div>
+
+        {/* SLA Breaches */}
         <div className="kpi-box sla-box">
+          <div className="kpi-header-row">
+            <AlertTriangle size={16} className="kpi-icon" />
+            <span className="kpi-tag-label">SLA Breach</span>
+          </div>
           <span className="kpi-val">{String(slaBreaches).padStart(2, '0')}</span>
-          <span className="kpi-label">SLA Breach</span>
+          <span className="kpi-caption">&gt; 15m Delayed</span>
         </div>
-        <div className="kpi-box">
+
+        {/* Outbox Pending */}
+        <div className="kpi-box outbox-box">
+          <div className="kpi-header-row">
+            <RefreshCw size={16} className="kpi-icon" />
+            <span className="kpi-tag-label">Outbox</span>
+          </div>
           <span className="kpi-val">{String(outboxCount).padStart(2, '0')}</span>
-          <span className="kpi-label">Outbox Sync</span>
+          <span className="kpi-caption">Sync Queue</span>
         </div>
       </div>
 
-      <div style={{ marginTop: '1.5rem' }}>
+      {/* Hotspots Section */}
+      <div className="hotspots-section" style={{ marginTop: '1.5rem' }}>
         <div className="section-heading">
-          <span>02 / Hotspots (2h Window)</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Flame size={13} color="var(--signal-amber)" />
+            <span>02 / Hotspots (2h Window)</span>
+          </span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Top Clusters</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+        <div className="hotspots-list">
           {hotspots.length === 0 ? (
-            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', padding: '0.5rem 0' }}>
-              No repeat clusters detected
+            <div className="hotspot-empty">
+              <span>No repeat clusters detected in this window</span>
             </div>
           ) : (
-            hotspots.slice(0, 5).map((h) => (
-              <div key={h.station_id} className="hotspot-item">
-                <span>{h.station_id}</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{h.count} REPS</span>
-              </div>
-            ))
+            hotspots.slice(0, 5).map((h, index) => {
+              const maxCount = Math.max(...hotspots.map((item) => item.count), 1);
+              const pct = Math.round((h.count / maxCount) * 100);
+
+              return (
+                <div key={h.station_id} className="hotspot-item">
+                  <div className="hotspot-info">
+                    <span className="hotspot-rank">#{index + 1}</span>
+                    <span className="hotspot-name">{h.station_id.replace('STN_', '')}</span>
+                  </div>
+                  <div className="hotspot-count-pill">
+                    <span>{h.count} reps</span>
+                  </div>
+                  <div className="hotspot-mini-bar">
+                    <div className="hotspot-mini-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
